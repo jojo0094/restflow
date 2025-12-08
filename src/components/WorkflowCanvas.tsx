@@ -11,7 +11,8 @@ const initialEdges = [
         { id: 'e1-2', source: '1', target: '2' }
 ];
 
-export default function App() {
+
+export default function WorkflowCanvas() {
         return (
                 <div style={{ width: '100vw', height: '100vh' }}>
                         <ReactFlow nodes={initialNodes} edges={initialEdges}>

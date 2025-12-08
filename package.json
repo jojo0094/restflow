@@ -4,11 +4,14 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "@bunup/plugin-tailwindcss": "^0.16.10",
     "@types/bun": "latest",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
+    "bunup": "^0.16.10",
+    "tailwindcss": "^4.1.17",
     "vite": "^7.2.7"
   },
   "peerDependencies": {
