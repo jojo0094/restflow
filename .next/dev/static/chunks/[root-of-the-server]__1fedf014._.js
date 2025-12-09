@@ -1269,34 +1269,32 @@ function WorkflowPanel() {
                     children: "Left Stack Content"
                 }, void 0, false, {
                     fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                    lineNumber: 12,
+                    lineNumber: 17,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 11,
+                lineNumber: 16,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "workflow-canvas",
                 style: {
-                    position: "absolute",
-                    left: "100%",
-                    top: 0,
-                    width: 920,
+                    position: "relative",
+                    flex: 1,
+                    width: "100%",
                     height: "100%",
-                    transition: "left 240ms ease-in-out",
                     boxShadow: "-4px 0 12px rgba(0,0,0,0.08)",
                     background: "white"
                 },
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$WorkflowCanvas$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                    lineNumber: 44,
+                    lineNumber: 34,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 18,
+                lineNumber: 23,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$WorkflowPanel$2f$SideStack$2e$tsx__$5b$client$5d$__$28$ecmascript$29$__["default"], {
@@ -1310,12 +1308,12 @@ function WorkflowPanel() {
                     children: "Right Stack Content"
                 }, void 0, false, {
                     fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                    lineNumber: 49,
+                    lineNumber: 39,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 48,
+                lineNumber: 38,
                 columnNumber: 7
             }, this)
         ]
