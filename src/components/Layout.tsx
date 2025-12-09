@@ -19,8 +19,12 @@ export default function Layout() {
                         const rect = containerRef.current.getBoundingClientRect();
 
                         if (draggingHandle === 'bottom') {
-                                // measure from bottom up
-                                const newHeight = Math.max(80, rect.bottom - e.clientY);
+                                // measure from bottom up and clamp so middle area remains usable
+                                const raw = rect.bottom - e.clientY;
+                                const minBottom = 80;
+                                const minMiddle = 120; // don't let middle collapse
+                                const maxBottom = Math.max(minBottom, rect.height - topBarHeight - minMiddle);
+                                const newHeight = Math.max(minBottom, Math.min(raw, maxBottom));
                                 setBottomBarHeight(newHeight);
                         } else {
                                 // dragging top divider: measure from top down
@@ -68,7 +72,7 @@ export default function Layout() {
                         />
                         <div className="MapPlusWorkflowArea" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                 {/* Main top area: map placeholder */}
-                                <div className="Poppable-1" style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                                <div className="Poppable-1" style={{ flex: 1, position: 'relative', overflow: 'hidden', paddingBottom: bottomBarHeight }}>
                                         <MapPanel />
 
                                         {/* Side menu popup overlay */}
@@ -81,17 +85,16 @@ export default function Layout() {
                                         )}
                                 </div>
 
-                                {/* Divider / drag handle for bottom bar (drag to resize bottom bar) */}
-                                <div
-                                        className="bar-handle bottom-handle"
-                                        onPointerDown={() => setDraggingHandle('bottom')}
-                                        style={{ height: 8, cursor: 'row-resize', background: '#e5e7eb' }}
-                                        aria-hidden
-                                />
-
-                                <div className="Poppable-2" style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                                        {/* Bottom bar */}
-                                        <div className="bottom-bar" style={{ height: bottomBarHeight, display: 'flex', alignItems: 'stretch' }}>
+                                <div className="Poppable-2" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: bottomBarHeight, overflow: 'hidden' }}>
+                                        {/* Divider / drag handle for bottom bar (drag to resize bottom bar) - positioned so it moves with the bar */}
+                                        <div
+                                                className="bar-handle bottom-handle"
+                                                onPointerDown={() => setDraggingHandle('bottom')}
+                                                style={{ position: 'absolute', left: 0, right: 0, height: 8, cursor: 'row-resize', background: '#e5e7eb', top: 0 }}
+                                                aria-hidden
+                                        />
+                                        {/* Bottom bar fills this container */}
+                                        <div className="bottom-bar" style={{ height: '100%', display: 'flex', alignItems: 'stretch' }}>
                                                 <div className="bar-left" style={{ width: 64, background: '#111827', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         <button className="p-2" onClick={() => setShowSideMenu(true)} aria-label="Open menu">
                                                                 ☰
