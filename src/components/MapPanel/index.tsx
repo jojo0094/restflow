@@ -7,8 +7,8 @@ import ZoomControl from './ZoomControl';
 export default function MapPanel() {
         const [leftAOpen, setLeftAOpen] = useState(false);
         const [leftBOpen, setLeftBOpen] = useState(false);
-        const [leftCOpen, setLeftCOpen] = useState(false);
-        const [rightOpen, setRightOpen] = useState(false);
+        // const [leftCOpen, setLeftCOpen] = useState(false);
+        const [rightCOpen, setRightCOpen] = useState(false);
 
         return (
                 <div className="map-panel" style={{ height: '100%', display: 'flex', position: 'relative' }}>
@@ -28,7 +28,7 @@ export default function MapPanel() {
                         </div>
 
                         <div className="map-right" style={{ display: 'flex', flexDirection: 'row' }}>
-                                <SideStack name="C" side="right" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}>
+                                <SideStack name="C" side="right" open={rightCOpen} onToggle={() => setRightCOpen((s) => !s)}>
                                         <div style={{ padding: 12 }}>Right C content</div>
                                 </SideStack>
                         </div>

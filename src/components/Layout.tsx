@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import SideMenu from './SideMenu';
 import WorkflowCanvas from './WorkflowCanvas';
 import MapPanel from './MapPanel';
+import SideStack from './MapPanel/SideStack';
 
 export default function Layout() {
         // height of the top and bottom bars in px
@@ -49,7 +50,7 @@ export default function Layout() {
         return (
                 <div className="app-root" ref={containerRef} style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
                         {/* Top bar */}
-                        <div className="top-bar" style={{ height: topBarHeight, display: 'flex', alignItems: 'stretch' }}>
+                        <div className="top-bar" style={{ height: topBarHeight, maxHeight: '20px', display: 'flex', alignItems: 'stretch' }}>
                                 <div className="bar-left" style={{ width: 64, background: '#111827', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <button className="p-2" onClick={() => setShowSideMenu(true)} aria-label="Open menu">
                                                 ☰

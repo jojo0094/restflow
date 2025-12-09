@@ -118,3 +118,17 @@ Import path: ../src/styles.css
 [00:42:07.832] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
 [00:42:56.013] Server  LOG      ✓ Compiled in 71ms
 [00:44:41.533] Server  LOG      ✓ Compiled in 67ms
+[00:55:34.198] Server  LOG      ✓ Compiled in 73ms
+[00:57:47.001] Server  LOG      ✓ Compiled in 98ms
+[00:58:09.468] Server  LOG      ✓ Compiled in 87ms
+[01:02:12.978] Server  LOG      ✓ Compiled in 126ms
+[01:03:41.680] Server  LOG      ✓ Compiled in 37ms
+[01:04:41.575] Server  LOG      ✓ Compiled in 64ms
+[01:04:41.770] Browser ERROR   %o
+
+%s
+
+%s
+ {} The above error occurred in the <MapPanel> component. React will try to recreate this component tree from scratch using the error boundary you provided, PagesDevOverlayErrorBoundary.
+[01:05:04.290] Server  LOG      ✓ Compiled in 35ms
+[01:05:09.747] Server  LOG      ✓ Compiled in 31ms

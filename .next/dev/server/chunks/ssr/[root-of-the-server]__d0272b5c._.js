@@ -524,8 +524,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MapPane
 function MapPanel() {
     const [leftAOpen, setLeftAOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
     const [leftBOpen, setLeftBOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
-    const [leftCOpen, setLeftCOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
-    const [rightOpen, setRightOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
+    // const [leftCOpen, setLeftCOpen] = useState(false);
+    const [rightCOpen, setRightCOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(false);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
         className: "map-panel",
         style: {
@@ -619,8 +619,8 @@ function MapPanel() {
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MapPanel$2f$SideStack$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {
                     name: "C",
                     side: "right",
-                    open: leftCOpen,
-                    onToggle: ()=>setLeftCOpen((s)=>!s),
+                    open: rightCOpen,
+                    onToggle: ()=>setRightCOpen((s)=>!s),
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
                         style: {
                             padding: 12
@@ -725,6 +725,7 @@ function Layout() {
                 className: "top-bar",
                 style: {
                     height: topBarHeight,
+                    maxHeight: '20px',
                     display: 'flex',
                     alignItems: 'stretch'
                 },
@@ -746,12 +747,12 @@ function Layout() {
                             children: "☰"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Layout.tsx",
-                            lineNumber: 54,
+                            lineNumber: 55,
                             columnNumber: 41
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Layout.tsx",
-                        lineNumber: 53,
+                        lineNumber: 54,
                         columnNumber: 33
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -773,18 +774,18 @@ function Layout() {
                             children: "Map / Flow area"
                         }, void 0, false, {
                             fileName: "[project]/src/components/Layout.tsx",
-                            lineNumber: 60,
+                            lineNumber: 61,
                             columnNumber: 41
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/components/Layout.tsx",
-                        lineNumber: 59,
+                        lineNumber: 60,
                         columnNumber: 33
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Layout.tsx",
-                lineNumber: 52,
+                lineNumber: 53,
                 columnNumber: 25
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -798,7 +799,7 @@ function Layout() {
                 "aria-hidden": true
             }, void 0, false, {
                 fileName: "[project]/src/components/Layout.tsx",
-                lineNumber: 67,
+                lineNumber: 68,
                 columnNumber: 25
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -821,7 +822,7 @@ function Layout() {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$MapPanel$2f$index$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                                 fileName: "[project]/src/components/Layout.tsx",
-                                lineNumber: 76,
+                                lineNumber: 77,
                                 columnNumber: 41
                             }, this),
                             showSideMenu && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -835,23 +836,23 @@ function Layout() {
                                         close: ()=>setShowSideMenu(false)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Layout.tsx",
-                                        lineNumber: 82,
+                                        lineNumber: 83,
                                         columnNumber: 65
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/Layout.tsx",
-                                    lineNumber: 81,
+                                    lineNumber: 82,
                                     columnNumber: 57
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Layout.tsx",
-                                lineNumber: 80,
+                                lineNumber: 81,
                                 columnNumber: 49
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Layout.tsx",
-                        lineNumber: 75,
+                        lineNumber: 76,
                         columnNumber: 33
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -880,7 +881,7 @@ function Layout() {
                                 "aria-hidden": true
                             }, void 0, false, {
                                 fileName: "[project]/src/components/Layout.tsx",
-                                lineNumber: 90,
+                                lineNumber: 91,
                                 columnNumber: 41
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -909,12 +910,12 @@ function Layout() {
                                             children: "☰"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/Layout.tsx",
-                                            lineNumber: 99,
+                                            lineNumber: 100,
                                             columnNumber: 57
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Layout.tsx",
-                                        lineNumber: 98,
+                                        lineNumber: 99,
                                         columnNumber: 49
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -957,12 +958,12 @@ function Layout() {
                                                         children: showWorkflow ? '›' : '‹'
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/Layout.tsx",
-                                                        lineNumber: 108,
+                                                        lineNumber: 109,
                                                         columnNumber: 73
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Layout.tsx",
-                                                    lineNumber: 107,
+                                                    lineNumber: 108,
                                                     columnNumber: 65
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -974,47 +975,47 @@ function Layout() {
                                                         collapsed: !showWorkflow
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/Layout.tsx",
-                                                        lineNumber: 118,
+                                                        lineNumber: 119,
                                                         columnNumber: 73
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/Layout.tsx",
-                                                    lineNumber: 117,
+                                                    lineNumber: 118,
                                                     columnNumber: 65
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/Layout.tsx",
-                                            lineNumber: 106,
+                                            lineNumber: 107,
                                             columnNumber: 57
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/Layout.tsx",
-                                        lineNumber: 104,
+                                        lineNumber: 105,
                                         columnNumber: 49
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/Layout.tsx",
-                                lineNumber: 97,
+                                lineNumber: 98,
                                 columnNumber: 41
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/Layout.tsx",
-                        lineNumber: 88,
+                        lineNumber: 89,
                         columnNumber: 33
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/Layout.tsx",
-                lineNumber: 73,
+                lineNumber: 74,
                 columnNumber: 25
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/Layout.tsx",
-        lineNumber: 50,
+        lineNumber: 51,
         columnNumber: 17
     }, this);
 }
