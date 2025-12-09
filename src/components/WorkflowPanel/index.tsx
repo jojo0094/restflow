@@ -1,7 +1,44 @@
+import { useEffect, useRef, useState } from "react";
 import WorkflowCanvas from "../WorkflowCanvas";
-import SideStack from "./SideStack";
 
 export default function WorkflowPanel() {
+  const [leftWidth, setLeftWidth] = useState(220);
+  const [rightWidth, setRightWidth] = useState(220);
+  const resizingRef = useRef(false);
+  const sideRef = useRef("left");
+
+  useEffect(() => {
+    function onPointerMove(e) {
+      if (!resizingRef.current) return;
+      if (sideRef.current === "left") {
+        setLeftWidth(Math.max(60, Math.min(520, e.clientX)));
+      } else if (sideRef.current === "right") {
+        const parentWidth = window.innerWidth;
+        setRightWidth(Math.max(60, Math.min(520, parentWidth - e.clientX)));
+      }
+    }
+
+    function onPointerUp() {
+      resizingRef.current = false;
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+  }, []);
+
+  function startResize(side) {
+    return (e) => {
+      resizingRef.current = true;
+      sideRef.current = side;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    };
+  }
+
   return (
     <div
       className="workflow-panel"
@@ -13,33 +50,66 @@ export default function WorkflowPanel() {
       }}
     >
       {/* Left SideStack */}
-      <SideStack name="left-stack-A" side="left">
+      <div
+        style={{
+          width: leftWidth,
+          transition: resizingRef.current ? "none" : "width 160ms ease",
+          overflow: "hidden",
+          borderRight: "1px solid #e5e7eb",
+          position: "relative",
+        }}
+      >
         <div style={{ height: "100%", background: "#f3f4f6" }}>
           Left Stack Content
         </div>
-      </SideStack>
+        <div
+          onPointerDown={startResize("left")}
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 12,
+            cursor: "col-resize",
+            zIndex: 30,
+          }}
+        />
+      </div>
 
       {/* WorkflowCanvas in the middle */}
       <div
         className="workflow-canvas"
-        style={{
-          position: "relative", // Changed from absolute to relative for better layout
-          flex: 1, // Allow it to grow and fill available space
-          width: "100%", // Ensure it has a width
-          height: "100%", // Ensure it has a height
-          boxShadow: "-4px 0 12px rgba(0,0,0,0.08)",
-          background: "white",
-        }}
+        style={{ flex: 1, width: "100%", height: "100%", background: "white" }}
       >
         <WorkflowCanvas />
       </div>
 
       {/* Right SideStack */}
-      <SideStack name="right-stack-B" side="right">
+      <div
+        style={{
+          width: rightWidth,
+          transition: resizingRef.current ? "none" : "width 160ms ease",
+          overflow: "hidden",
+          borderLeft: "1px solid #e5e7eb",
+          position: "relative",
+        }}
+      >
         <div style={{ height: "100%", background: "#f3f4f6" }}>
           Right Stack Content
         </div>
-      </SideStack>
+        <div
+          onPointerDown={startResize("right")}
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 12,
+            cursor: "col-resize",
+            zIndex: 30,
+          }}
+        />
+      </div>
     </div>
   );
 }
