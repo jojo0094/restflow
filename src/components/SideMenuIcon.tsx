@@ -2,16 +2,18 @@ import React from 'react';
 
 interface Props {
         onClick: () => void;
+        label?: string;
+        icon?: React.ReactNode;
 }
 
-export default function SideMenuIcon({ onClick }: Props) {
+export default function SideMenuIcon({ onClick, label = 'Open', icon }: Props) {
         return (
                 <button
-                        className="text-white p-2 hover:bg-gray-700 rounded"
                         onClick={onClick}
-                        aria-label="Toggle Workflow"
+                        aria-label={label}
+                        style={{ background: 'transparent', border: 'none', color: 'white' }}
                 >
-                        ☰
+                        {icon ?? '☰'}
                 </button>
         );
 }

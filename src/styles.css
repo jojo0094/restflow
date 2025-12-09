@@ -1,2 +1,56 @@
 @import "tailwindcss";
 
+.map-placeholder {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, #eef2ff 0%, #fef3c7 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #374151;
+	font-weight: 600;
+}
+
+.side-popup-overlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.28);
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	padding: 24px;
+	z-index: 40;
+}
+
+.side-popup {
+	width: 320px;
+	background: white;
+	border-radius: 8px;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+	overflow: hidden;
+}
+
+.bottom-bar {
+	border-top: 1px solid #e5e7eb;
+}
+
+.bar-handle:hover {
+	background: #d1d5db;
+}
+
+.map-panel {
+	height: 100%;
+	display: flex;
+	align-items: stretch;
+}
+.left-stack {
+	background: #f8fafc;
+}
+.map-center {
+	position: relative;
+	overflow: hidden;
+}
+.map-right {
+	background: #fff;
+}
+
