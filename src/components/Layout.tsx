@@ -68,7 +68,7 @@ export default function Layout() {
                         />
                         <div className="MapPlusWorkflowArea" style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                 {/* Main top area: map placeholder */}
-                                <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                                <div className="Poppable-1" style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                                         <MapPanel />
 
                                         {/* Side menu popup overlay */}
@@ -89,29 +89,31 @@ export default function Layout() {
                                         aria-hidden
                                 />
 
-                                {/* Bottom bar */}
-                                <div className="bottom-bar" style={{ height: bottomBarHeight, display: 'flex', alignItems: 'stretch' }}>
-                                        <div className="bar-left" style={{ width: 64, background: '#111827', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <button className="p-2" onClick={() => setShowSideMenu(true)} aria-label="Open menu">
-                                                        ☰
-                                                </button>
-                                        </div>
+                                <div className="Poppable-2" style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                                        {/* Bottom bar */}
+                                        <div className="bottom-bar" style={{ height: bottomBarHeight, display: 'flex', alignItems: 'stretch' }}>
+                                                <div className="bar-left" style={{ width: 64, background: '#111827', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <button className="p-2" onClick={() => setShowSideMenu(true)} aria-label="Open menu">
+                                                                ☰
+                                                        </button>
+                                                </div>
 
-                                        <div className="bar-right" style={{ width: 320, background: '#f9fafb', borderLeft: '1px solid #e5e7eb', position: 'relative' }}>
-                                                {/* Workflow slidable panel */}
-                                                <div style={{ position: 'absolute', left: showWorkflow ? 0 : '100%', top: 0, width: 920, height: '100%', transition: 'left 240ms ease-in-out', boxShadow: '-4px 0 12px rgba(0,0,0,0.08)', background: 'white' }}>
-                                                        <div style={{ position: 'absolute', left: -28, top: 12 }}>
-                                                                <button
-                                                                        aria-label="Toggle workflow"
-                                                                        onClick={() => setShowWorkflow((s) => !s)}
-                                                                        style={{ width: 28, height: 56, borderRadius: 4, background: '#111827', color: 'white', border: 'none' }}
-                                                                >
-                                                                        {showWorkflow ? '›' : '‹'}
-                                                                </button>
-                                                        </div>
+                                                <div className="bar-right" style={{ width: 320, background: '#f9fafb', borderLeft: '1px solid #e5e7eb', position: 'relative' }}>
+                                                        {/* Workflow slidable panel */}
+                                                        <div style={{ position: 'absolute', left: showWorkflow ? 0 : '100%', top: 0, width: 920, height: '100%', transition: 'left 240ms ease-in-out', boxShadow: '-4px 0 12px rgba(0,0,0,0.08)', background: 'white' }}>
+                                                                <div style={{ position: 'absolute', left: -28, top: 12 }}>
+                                                                        <button
+                                                                                aria-label="Toggle workflow"
+                                                                                onClick={() => setShowWorkflow((s) => !s)}
+                                                                                style={{ width: 28, height: 56, borderRadius: 4, background: '#111827', color: 'white', border: 'none' }}
+                                                                        >
+                                                                                {showWorkflow ? '›' : '‹'}
+                                                                        </button>
+                                                                </div>
 
-                                                        <div style={{ height: '100%', overflow: 'auto' }}>
-                                                                <WorkflowCanvas collapsed={!showWorkflow} />
+                                                                <div style={{ height: '100%', overflow: 'auto' }}>
+                                                                        <WorkflowCanvas collapsed={!showWorkflow} />
+                                                                </div>
                                                         </div>
                                                 </div>
                                         </div>
