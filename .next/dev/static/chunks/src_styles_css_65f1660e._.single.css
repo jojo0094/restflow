@@ -1,0 +1,68 @@
+/* [project]/src/styles.css [client] (css) */
+.map-placeholder {
+  color: #374151;
+  background: linear-gradient(90deg, #eef2ff 0%, #fef3c7 100%);
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+
+.side-popup-overlay {
+  z-index: 40;
+  background: #00000047;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 24px;
+  display: flex;
+  position: absolute;
+  inset: 0;
+}
+
+.side-popup {
+  background: #fff;
+  border-radius: 8px;
+  width: 320px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px #0000001f;
+}
+
+.bottom-bar {
+  border-top: 1px solid #e5e7eb;
+}
+
+.bar-handle:hover {
+  background: #d1d5db;
+}
+
+.map-panel {
+  align-items: stretch;
+  height: 100%;
+  display: flex;
+}
+
+.left-stack {
+  background: #f8fafc;
+  position: relative;
+}
+
+.left-stack > div[aria-hidden] {
+  background: none;
+}
+
+.left-stack [style*="col-resize"]:hover {
+  background: #0000000f;
+}
+
+.map-center {
+  position: relative;
+  overflow: hidden;
+}
+
+.map-right {
+  background: #fff;
+}
+
+/*# sourceMappingURL=src_styles_css_65f1660e._.single.css.map*/

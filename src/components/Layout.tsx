@@ -94,7 +94,7 @@ export default function Layout() {
                                                 aria-hidden
                                         />
                                         {/* Bottom bar fills this container */}
-                                        <div className="bottom-bar" style={{ height: '100%', display: 'flex', alignItems: 'stretch' }}>
+                                        <div className="bottom-bar" style={{ height: '100%', display: 'flex', alignItems: 'stretch', paddingTop: 8 }}>
                                                 <div className="bar-left" style={{ width: 64, background: '#111827', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                         <button className="p-2" onClick={() => setShowSideMenu(true)} aria-label="Open menu">
                                                                 ☰

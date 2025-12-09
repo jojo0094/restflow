@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 6, "column": 0}, "map": {"version":3,"sources":["file:///Users/thandar/akk/learning/webmap/restflow/pages/index.tsx"],"sourcesContent":["import Layout from \"../src/components/Layout\";\n\nconst Home = () => {\n  return <Layout />;\n};\n\nexport default Home;\n"],"names":[],"mappings":";;;;;AAAA;;;;;;;AAEA,MAAM,OAAO;IACX,qBAAO,qKAAC,gIAAM;;;;;AAChB;uCAEe"}}]
+}

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/thandar/akk/learning/webmap/restflow/pages/index.tsx"],"sourcesContent":["const Home = () => {\n  return (\n    <div>\n      <h1>Welcome to Next.js with Bun!</h1>\n    </div>\n  );\n};\n\nexport default Home;\n"],"names":[],"mappings":";;;;;;AAAA,MAAM,OAAO;IACX,qBACE,qKAAC;kBACC,cAAA,qKAAC;sBAAG;;;;;;;;;;;AAGV;uCAEe"}}]
+}

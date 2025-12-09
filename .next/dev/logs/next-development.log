@@ -1,0 +1,120 @@
+[00:00:00.838] Server  LOG      ✓ Ready in 633ms
+[00:00:03.532] Server  WARN     ⚠ Cross origin request detected from 192.168.1.84 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:00:34.867] Browser LOG     Refreshing page data due to server-side change
+[00:00:35.047] Server  LOG      ✓ Compiled in 424ms
+[00:00:35.135] Server  WARN     ⚠ Fast Refresh had to perform a full reload when [hmr-entry]/hmr-entry.js { ENTRY => "[project]/pages/_app" } changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:01:24.292] Server  LOG      ✓ Compiled in 105ms
+[00:01:24.398] Browser LOG     Refreshing page data due to server-side change
+[00:01:24.398] Browser ERROR   ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+[00:01:32.889] Browser ERROR   ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+[00:01:35.767] Browser ERROR   ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+[00:01:35.877] Browser ERROR   uncaughtError: Error: ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+
+
+[00:01:36.028] Browser ERROR   ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+[00:01:36.028] Browser ERROR   ./pages/index.tsx
+Failed to compile
+    Global CSS cannot be imported from files other than your Custom <App>. Due to the Global nature of stylesheets, and to avoid conflicts, Please move all first-party global CSS imports to pages/_app.js. Or convert the import to Component-Level CSS (CSS Modules).
+    Read more: https://nextjs.org/docs/messages/css-global
+Location: pages/index.tsx
+Import path: ../src/styles.css
+[00:01:49.758] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:01:49.847] Server  WARN     ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:01:49.880] Server  ERROR   Error: aborted
+[00:02:01.794] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:01.794] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:01.794] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:11.508] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:11.509] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:11.509] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:18.057] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:18.057] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:18.057] Browser ERROR   uncaughtError: NotFoundError: The object can not be found here.
+[00:02:30.551] Server  LOG      ✓ Compiled in 24ms
+[00:02:39.882] Server  LOG      ✓ Compiled in 17ms
+[00:02:46.129] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:02:46.129] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:02:46.129] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:02:51.267] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:02:51.267] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:02:51.268] Browser ERROR   Failed to release pointer capture: {"column":61,"line":711,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:04.250] Server  LOG      ✓ Compiled in 21ms
+[00:03:14.982] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:14.982] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:14.982] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:19.728] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:19.729] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:19.729] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:23.709] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:23.709] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:23.709] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:24.559] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:24.559] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:24.559] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:29.711] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:29.711] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:29.711] Browser ERROR   Failed to release pointer capture: {"column":64,"line":47}
+[00:03:41.509] Server  LOG      ✓ Compiled in 25ms
+[00:03:50.897] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:50.897] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:50.897] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:55.360] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:55.360] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:03:55.360] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:00.181] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:00.182] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:00.182] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:01.974] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:01.974] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:01.974] Browser ERROR   Failed to release pointer capture: {"column":64,"line":712,"sourceURL":"http://192.168.1.84:3001/_next/static/chunks/%5Broot-of-the-server%5D__2fb1761b._.js"}
+[00:04:13.139] Server  LOG      ✓ Compiled in 18ms
+[00:10:12.377] Server  LOG      ✓ Compiled in 152ms
+[00:10:46.521] Server  LOG      ✓ Compiled in 97ms
+[00:11:35.687] Server  LOG      ✓ Compiled in 89ms
+[00:12:38.642] Server  LOG      ✓ Compiled in 44ms
+[00:13:07.849] Server  LOG      ✓ Compiled in 42ms
+[00:15:47.799] Server  LOG      ✓ Compiled in 77ms
+[00:17:15.082] Server  LOG      ✓ Compiled in 78ms
+[00:17:33.405] Server  LOG      ✓ Compiled in 85ms
+[00:22:28.301] Server  LOG      ✓ Compiled in 126ms
+[00:34:30.192] Server  LOG      ✓ Compiled in 92ms
+[00:38:04.202] Server  LOG      ✓ Compiled in 154ms
+[00:38:10.760] Server  LOG      ✓ Compiled in 32ms
+[00:39:54.675] Server  LOG      ✓ Compiled in 26ms
+[00:40:55.379] Server  LOG      ✓ Compiled in 19ms
+[00:41:25.983] Server  LOG      ✓ Compiled in 20ms
+[00:41:50.729] Server  LOG      ✓ Compiled in 167ms
+[00:41:57.701] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:41:57.701] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:41:57.701] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:42:07.832] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:42:07.832] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:42:07.832] Browser ERROR   uncaughtError: NotFoundError: Failed to execute 'releasePointerCapture' on 'Element': No active pointer with the given id is found.
+[00:42:56.013] Server  LOG      ✓ Compiled in 71ms
+[00:44:41.533] Server  LOG      ✓ Compiled in 67ms

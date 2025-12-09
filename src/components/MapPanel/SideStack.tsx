@@ -36,9 +36,19 @@ export default function SideStack({ name, open, onToggle, children, initialWidth
                                         setWidth(Math.min(520, newWidth));
                                 }
 
-                function onPointerUp() {
+                function onPointerUp(e: PointerEvent) {
                         resizingRef.current = false;
-                        rootRef.current?.releasePointerCapture?.(0 as any);
+                        if (rootRef.current) {
+                                try {
+                                        if (e.pointerId) {
+                                                rootRef.current.releasePointerCapture(e.pointerId);
+                                        }
+                                } catch (error) {
+                                        console.error("Failed to release pointer capture:", error);
+                                }
+                        } else {
+                                console.warn("rootRef.current is null or undefined during onPointerUp. Ensure the ref is correctly attached to the DOM element.");
+                        }
                 }
 
                 window.addEventListener('pointermove', onPointerMove);
