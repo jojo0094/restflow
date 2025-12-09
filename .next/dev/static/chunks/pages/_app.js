@@ -8,8 +8,8 @@ __turbopack_load_page_chunks__("/_app", [
   "static/chunks/node_modules_@xyflow_react_dist_esm_index_927aba1e.js",
   "static/chunks/node_modules_tailwindcss_dist_4eefeef8._.js",
   "static/chunks/node_modules_c97cde18._.js",
-  "static/chunks/[root-of-the-server]__2fb1761b._.js",
+  "static/chunks/[root-of-the-server]__f224e2c8._.js",
   "static/chunks/_d7c45c52._.css",
   "static/chunks/pages__app_2da965e7._.js",
-  "static/chunks/turbopack-pages__app_85e57bc1._.js"
+  "static/chunks/turbopack-pages__app_e0f9f6c5._.js"
 ])

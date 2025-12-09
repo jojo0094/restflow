@@ -132,3 +132,295 @@ Import path: ../src/styles.css
  {} The above error occurred in the <MapPanel> component. React will try to recreate this component tree from scratch using the error boundary you provided, PagesDevOverlayErrorBoundary.
 [01:05:04.290] Server  LOG      ✓ Compiled in 35ms
 [01:05:09.747] Server  LOG      ✓ Compiled in 31ms
+[01:56:10.015] Server  LOG      ✓ Compiled in 134ms
+[01:58:13.528] Server  LOG      ✓ Compiled in 151ms
+[01:58:50.547] Server  LOG      ✓ Compiled in 60ms
+[01:58:51.269] Browser ERROR   ./src/components/Layout.tsx:216:53
+Parsing ecmascript source code failed
+  214 |           {/*     }} */}
+  215 |           {/*   > */}
+> 216 |           {/*     {/* Workflow slidable panel */} */}
+      |                                                     ^
+  217 |           {/*     <div */}
+  218 |           {/*       style={{ */}
+  219 |           {/*         position: "absolute", */}
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:58:51.270] Browser ERROR   ./src/components/Layout.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:58:59.978] Server  LOG      ✓ Compiled in 22ms
+[01:59:00.255] Browser ERROR   ./src/components/Layout.tsx:254:6
+Parsing ecmascript source code failed
+  252 |       </div>
+  253 |     </div>
+> 254 |     </div >
+      |      ^^^^^^
+  255 |   );
+  256 | }
+  257 |
+
+Unterminated regexp literal
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:59:00.255] Browser ERROR   ./src/components/Layout.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:59:41.470] Server  LOG      ✓ Compiled in 42ms
+[01:59:42.057] Browser ERROR   ./src/components/Layout.tsx:216:53
+Parsing ecmascript source code failed
+  214 |             {/*   }} */}
+  215 |             {/* > */}
+> 216 |             {/*   {/* Workflow slidable panel */} */}
+      |                                                     ^
+  217 |             {/*   <div */}
+  218 |             {/*     style={{ */}
+  219 |             {/*       position: "absolute", */}
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:59:42.064] Browser ERROR   ./src/components/Layout.tsx:254:6
+Parsing ecmascript source code failed
+  252 |       </div>
+  253 |     </div>
+> 254 |     </div >
+      |      ^^^^^^
+  255 |   );
+  256 | }
+  257 |
+
+Unterminated regexp literal
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[01:59:42.064] Browser ERROR   ./src/components/Layout.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:00:03.623] Server  LOG      ✓ Compiled in 55ms
+[02:00:35.771] Server  LOG      ✓ Compiled in 35ms
+[02:00:36.267] Browser ERROR   ./src/components/Layout.tsx:216:53
+Parsing ecmascript source code failed
+  214 |             {/*   }} */}
+  215 |             {/* > */}
+> 216 |             {/*   {/* Workflow slidable panel */} */}
+      |                                                     ^
+  217 |             {/*   <div */}
+  218 |             {/*     style={{ */}
+  219 |             {/*       position: "absolute", */}
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:00:36.268] Browser ERROR   ./src/components/Layout.tsx:254:6
+Parsing ecmascript source code failed
+  252 |       </div>
+  253 |     </div>
+> 254 |     </div >
+      |      ^^^^^^
+  255 |   );
+  256 | }
+  257 |
+
+Unterminated regexp literal
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:00:36.268] Browser ERROR   ./src/components/Layout.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:00:47.255] Browser ERROR   ./src/components/Layout.tsx:216:53
+Parsing ecmascript source code failed
+  214 |             {/*   }} */}
+  215 |             {/* > */}
+> 216 |             {/*   {/* Workflow slidable panel */} */}
+      |                                                     ^
+  217 |             {/*   <div */}
+  218 |             {/*     style={{ */}
+  219 |             {/*       position: "absolute", */}
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:00:47.256] Browser ERROR   ./src/components/Layout.tsx
+Code generation for chunk item errored
+An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+
+Caused by:
+- CJS module can't be async.
+
+Debug info:
+- An error occurred while generating the chunk item [project]/src/components/Layout.tsx [ssr] (ecmascript)
+- Execution of <ModuleChunkItem as EcmascriptChunkItem>::content_with_async_module_info failed
+- Execution of EcmascriptChunkItemContent::new failed
+- CJS module can't be async.
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:02:32.633] Server  LOG      ✓ Compiled in 33ms
+[02:02:46.423] Server  LOG      ✓ Compiled in 129ms
+[02:06:12.283] Server  LOG      ✓ Compiled in 121ms
+[02:06:12.924] Browser ERROR   ./src/components/Layout.tsx:249:36
+Parsing ecmascript source code failed
+  247 |             {/*   {/*     <WorkflowCanvas collapsed={!showWorkflow} /> */} */}
+  248 |             {/*   {/*   </div> */} */}
+> 249 |             {/*   {/* </div> */} */}
+      |                                    ^
+  250 |             {/* </div> */}
+  251 |           </div>
+  252 |         </div>
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Browser:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+
+  SSR:
+    ./src/components/Layout.tsx
+    ./pages/_app.tsx
+[02:07:01.891] Server  LOG      ✓ Compiled in 58ms
+[02:07:23.971] Server  LOG      ✓ Compiled in 162ms
+[02:07:24.529] Browser WARN    [React Flow]: It seems that you haven't loaded the styles. Please import '@xyflow/react/dist/style.css' or base.css to make sure everything is working properly. Help: https://reactflow.dev/error#013
+[02:07:24.532] Browser WARN    [React Flow]: The React Flow parent container needs a width and a height to render the graph. Help: https://reactflow.dev/error#004
+[02:17:14.874] Server  LOG      ✓ Compiled in 109ms
+[02:17:44.252] Server  LOG      ✓ Compiled in 40ms
+[02:17:48.954] Browser WARN    [React Flow]: The React Flow parent container needs a width and a height to render the graph. Help: https://reactflow.dev/error#004
+[02:17:48.956] Browser WARN    [React Flow]: The React Flow parent container needs a width and a height to render the graph. Help: https://reactflow.dev/error#004
+[02:18:10.723] Server  LOG      ✓ Compiled in 35ms
+[02:18:10.864] Browser ERROR   %o
+
+%s
+
+%s
+ {} The above error occurred in the <WorkflowPanel> component. React will try to recreate this component tree from scratch using the error boundary you provided, PagesDevOverlayErrorBoundary.
+[02:18:16.751] Server  LOG      ✓ Compiled in 49ms
+[02:21:24.880] Server  LOG      ✓ Compiled in 22ms
