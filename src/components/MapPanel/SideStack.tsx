@@ -6,9 +6,10 @@ interface Props {
         onToggle: () => void;
         children?: React.ReactNode;
         initialWidth?: number;
+        side?: 'left' | 'right';
 }
 
-export default function SideStack({ name, open, onToggle, children, initialWidth = 220 }: Props) {
+export default function SideStack({ name, open, onToggle, children, initialWidth = 220, side = 'left' }: Props) {
         const [width, setWidth] = useState(open ? initialWidth : 40);
         const resizingRef = useRef(false);
         const rootRef = useRef<HTMLDivElement | null>(null);
@@ -19,12 +20,21 @@ export default function SideStack({ name, open, onToggle, children, initialWidth
         }, [open]);
 
         useEffect(() => {
-                function onPointerMove(e: PointerEvent) {
-                        if (!resizingRef.current || !rootRef.current) return;
-                        const rect = rootRef.current.getBoundingClientRect();
-                        const newWidth = Math.max(60, e.clientX - rect.left);
-                        setWidth(Math.min(520, newWidth));
-                }
+                                function onPointerMove(e: PointerEvent) {
+                                        if (!resizingRef.current || !rootRef.current) return;
+                                        const rect = rootRef.current.getBoundingClientRect();
+                                        let newWidth = width;
+                                        if (side === 'left') {
+                                                newWidth = Math.max(60, e.clientX - rect.left);
+                                        } else {
+                                                // right-side panel: calculate width from right edge
+                                                const parentRect = rootRef.current.parentElement?.getBoundingClientRect();
+                                                if (parentRect) {
+                                                        newWidth = Math.max(60, parentRect.right - e.clientX);
+                                                }
+                                        }
+                                        setWidth(Math.min(520, newWidth));
+                                }
 
                 function onPointerUp() {
                         resizingRef.current = false;
@@ -39,11 +49,10 @@ export default function SideStack({ name, open, onToggle, children, initialWidth
                 };
         }, []);
 
-        function startResize(e: React.PointerEvent) {
-                resizingRef.current = true;
-                // capture pointer to keep receiving moves
-                (e.target as Element).setPointerCapture?.(e.pointerId);
-        }
+                function startResize(e: React.PointerEvent) {
+                        resizingRef.current = true;
+                        (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+                }
 
         return (
                 <div ref={rootRef} className={`left-stack left-stack-${name}`} style={{ width, transition: resizingRef.current ? 'none' : 'width 160ms ease', overflow: 'hidden', borderRight: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column' }}>
@@ -58,13 +67,13 @@ export default function SideStack({ name, open, onToggle, children, initialWidth
                         </div>
 
                         {/* resize handle on the right edge */}
-                        {open && (
-                                <div
-                                        onPointerDown={startResize}
-                                        style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 8, cursor: 'col-resize', zIndex: 30 }}
-                                        aria-hidden
-                                />
-                        )}
+                                                {open && (
+                                                        <div
+                                                                onPointerDown={startResize}
+                                                                style={side === 'left' ? { position: 'absolute', right: 0, top: 0, bottom: 0, width: 12, cursor: 'col-resize', zIndex: 30 } : { position: 'absolute', left: 0, top: 0, bottom: 0, width: 12, cursor: 'col-resize', zIndex: 30 }}
+                                                                aria-hidden
+                                                        />
+                                                )}
                 </div>
         );
 }

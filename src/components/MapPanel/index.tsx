@@ -13,11 +13,11 @@ export default function MapPanel() {
         return (
                 <div className="map-panel" style={{ height: '100%', display: 'flex', position: 'relative' }}>
                         <div className="map-left" style={{ display: 'flex', flexDirection: 'row' }}>
-                                <SideStack name="A" open={leftAOpen} onToggle={() => setLeftAOpen((s) => !s)}>
+                                <SideStack name="A" side="left" open={leftAOpen} onToggle={() => setLeftAOpen((s) => !s)}>
                                         <div style={{ padding: 12 }}>Left A content</div>
                                 </SideStack>
 
-                                <SideStack Stack name="B" open={leftBOpen} onToggle={() => setLeftBOpen((s) => !s)}>
+                                <SideStack name="B" side="left" open={leftBOpen} onToggle={() => setLeftBOpen((s) => !s)}>
                                         <div style={{ padding: 12 }}>Left B content</div>
                                 </SideStack>
                         </div>
@@ -27,8 +27,8 @@ export default function MapPanel() {
                                 <ZoomControl />
                         </div>
 
-                        <div className="map-left" style={{ display: 'flex', flexDirection: 'row' }}>
-                                <SideStack name="C" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}>
+                        <div className="map-right" style={{ display: 'flex', flexDirection: 'row' }}>
+                                <SideStack name="C" side="right" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}>
                                         <div style={{ padding: 12 }}>Right C content</div>
                                 </SideStack>
                         </div>

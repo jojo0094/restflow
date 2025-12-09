@@ -46,7 +46,7 @@
 .left-stack {
 	background: #f8fafc;
 }
-.left-stack:hover { position: relative; }
+.left-stack { position: relative; }
 .left-stack > div[aria-hidden] { background: transparent; }
 .left-stack [style*="col-resize"]:hover { background: rgba(0,0,0,0.06); }
 .map-center {
