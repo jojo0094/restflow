@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import SideStack from './LeftStack';
+import SideStack from './SideStack';
 import MapEngine from './MapEngine';
-import RightBar from './RightBar';
+// import RightBar from './RightBar';
 import ZoomControl from './ZoomControl';
 
 export default function MapPanel() {
@@ -27,9 +27,11 @@ export default function MapPanel() {
                                 <ZoomControl />
                         </div>
 
-                        <SideStack name="C" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}>
-                                <div style={{ padding: 12 }}>Right C content</div>
-                        </SideStack>
+                        <div className="map-left" style={{ display: 'flex', flexDirection: 'row' }}>
+                                <SideStack name="C" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}>
+                                        <div style={{ padding: 12 }}>Right C content</div>
+                                </SideStack>
+                        </div>
                         {/* <div className="map-right" style={{ width: 280, borderLeft: '1px solid #e5e7eb', position: 'relative' }}> */}
                         {/* <RightBar open={rightOpen} onToggle={() => setRightOpen((s) => !s)} /> */}
                         {/*         <LeftStack name="C" open={leftCOpen} onToggle={() => setLeftCOpen((s) => !s)}> */}
