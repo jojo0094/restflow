@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import WorkflowCanvas from "../WorkflowCanvas";
 
 export default function WorkflowPanel() {
-  const [leftWidth, setLeftWidth] = useState(220);
-  const [rightWidth, setRightWidth] = useState(220);
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+  const [leftWidth, setLeftWidth] = useState(leftOpen ? 220 : 40);
+  const [rightWidth, setRightWidth] = useState(rightOpen ? 220 : 40);
   const resizingRef = useRef(false);
   const sideRef = useRef("left");
 
@@ -39,6 +41,16 @@ export default function WorkflowPanel() {
     };
   }
 
+  function toggleLeft() {
+    setLeftOpen((prev) => !prev);
+    setLeftWidth((prev) => (leftOpen ? 40 : 220));
+  }
+
+  function toggleRight() {
+    setRightOpen((prev) => !prev);
+    setRightWidth((prev) => (rightOpen ? 40 : 220));
+  }
+
   return (
     <div
       className="workflow-panel"
@@ -59,21 +71,40 @@ export default function WorkflowPanel() {
           position: "relative",
         }}
       >
-        <div style={{ height: "100%", background: "#f3f4f6" }}>
-          Left Stack Content
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <button
+            onClick={toggleLeft}
+            aria-label="Toggle Left Panel"
+            style={{
+              width: 40,
+              height: 40,
+              background: "#111827",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Left
+          </button>
         </div>
-        <div
-          onPointerDown={startResize("left")}
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 12,
-            cursor: "col-resize",
-            zIndex: 30,
-          }}
-        />
+        {leftOpen && (
+          <div style={{ height: "100%", background: "#f3f4f6" }}>
+            Left Stack Content
+          </div>
+        )}
+        {leftOpen && (
+          <div
+            onPointerDown={startResize("left")}
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 12,
+              cursor: "col-resize",
+              zIndex: 30,
+            }}
+          />
+        )}
       </div>
 
       {/* WorkflowCanvas in the middle */}
@@ -94,21 +125,40 @@ export default function WorkflowPanel() {
           position: "relative",
         }}
       >
-        <div style={{ height: "100%", background: "#f3f4f6" }}>
-          Right Stack Content
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <button
+            onClick={toggleRight}
+            aria-label="Toggle Right Panel"
+            style={{
+              width: 40,
+              height: 40,
+              background: "#111827",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Right
+          </button>
         </div>
-        <div
-          onPointerDown={startResize("right")}
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 12,
-            cursor: "col-resize",
-            zIndex: 30,
-          }}
-        />
+        {rightOpen && (
+          <div style={{ height: "100%", background: "#f3f4f6" }}>
+            Right Stack Content
+          </div>
+        )}
+        {rightOpen && (
+          <div
+            onPointerDown={startResize("right")}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 12,
+              cursor: "col-resize",
+              zIndex: 30,
+            }}
+          />
+        )}
       </div>
     </div>
   );

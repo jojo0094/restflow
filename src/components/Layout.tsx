@@ -63,7 +63,7 @@ export default function Layout() {
         className="top-bar"
         style={{
           height: topBarHeight,
-          maxHeight: "20px",
+          maxHeight: "40px",
           display: "flex",
           alignItems: "stretch",
         }}

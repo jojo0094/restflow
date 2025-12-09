@@ -675,8 +675,10 @@ var __turbopack_async_dependencies__ = __turbopack_handle_async_dependencies__([
 ;
 ;
 function WorkflowPanel() {
-    const [leftWidth, setLeftWidth] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(220);
-    const [rightWidth, setRightWidth] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(220);
+    const [leftOpen, setLeftOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(true);
+    const [rightOpen, setRightOpen] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(true);
+    const [leftWidth, setLeftWidth] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(leftOpen ? 220 : 40);
+    const [rightWidth, setRightWidth] = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useState"])(rightOpen ? 220 : 40);
     const resizingRef = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])(false);
     const sideRef = (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useRef"])("left");
     (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["useEffect"])(()=>{
@@ -706,6 +708,14 @@ function WorkflowPanel() {
             e.currentTarget.setPointerCapture(e.pointerId);
         };
     }
+    function toggleLeft() {
+        setLeftOpen((prev)=>!prev);
+        setLeftWidth((prev)=>leftOpen ? 40 : 220);
+    }
+    function toggleRight() {
+        setRightOpen((prev)=>!prev);
+        setRightWidth((prev)=>rightOpen ? 40 : 220);
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
         className: "workflow-panel",
         style: {
@@ -726,16 +736,42 @@ function WorkflowPanel() {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
                         style: {
+                            display: "flex",
+                            alignItems: "center"
+                        },
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("button", {
+                            onClick: toggleLeft,
+                            "aria-label": "Toggle Left Panel",
+                            style: {
+                                width: 40,
+                                height: 40,
+                                background: "#111827",
+                                color: "white",
+                                border: "none"
+                            },
+                            children: "Left"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/WorkflowPanel/index.tsx",
+                            lineNumber: 75,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/WorkflowPanel/index.tsx",
+                        lineNumber: 74,
+                        columnNumber: 9
+                    }, this),
+                    leftOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
+                        style: {
                             height: "100%",
                             background: "#f3f4f6"
                         },
                         children: "Left Stack Content"
                     }, void 0, false, {
                         fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                        lineNumber: 62,
-                        columnNumber: 9
+                        lineNumber: 90,
+                        columnNumber: 11
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
+                    leftOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
                         onPointerDown: startResize("left"),
                         style: {
                             position: "absolute",
@@ -748,13 +784,13 @@ function WorkflowPanel() {
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                        lineNumber: 65,
-                        columnNumber: 9
+                        lineNumber: 95,
+                        columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 53,
+                lineNumber: 65,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -767,12 +803,12 @@ function WorkflowPanel() {
                 },
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$WorkflowCanvas$2e$tsx__$5b$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                     fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                    lineNumber: 84,
+                    lineNumber: 115,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 80,
+                lineNumber: 111,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
@@ -786,16 +822,42 @@ function WorkflowPanel() {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
                         style: {
+                            display: "flex",
+                            alignItems: "center"
+                        },
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("button", {
+                            onClick: toggleRight,
+                            "aria-label": "Toggle Right Panel",
+                            style: {
+                                width: 40,
+                                height: 40,
+                                background: "#111827",
+                                color: "white",
+                                border: "none"
+                            },
+                            children: "Right"
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/WorkflowPanel/index.tsx",
+                            lineNumber: 129,
+                            columnNumber: 11
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/WorkflowPanel/index.tsx",
+                        lineNumber: 128,
+                        columnNumber: 9
+                    }, this),
+                    rightOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
+                        style: {
                             height: "100%",
                             background: "#f3f4f6"
                         },
                         children: "Right Stack Content"
                     }, void 0, false, {
                         fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                        lineNumber: 97,
-                        columnNumber: 9
+                        lineNumber: 144,
+                        columnNumber: 11
                     }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
+                    rightOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$externals$5d2f$react$2f$jsx$2d$dev$2d$runtime__$5b$external$5d$__$28$react$2f$jsx$2d$dev$2d$runtime$2c$__cjs$29$__["jsxDEV"])("div", {
                         onPointerDown: startResize("right"),
                         style: {
                             position: "absolute",
@@ -808,19 +870,19 @@ function WorkflowPanel() {
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                        lineNumber: 100,
-                        columnNumber: 9
+                        lineNumber: 149,
+                        columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-                lineNumber: 88,
+                lineNumber: 119,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/WorkflowPanel/index.tsx",
-        lineNumber: 43,
+        lineNumber: 55,
         columnNumber: 5
     }, this);
 }
@@ -902,7 +964,7 @@ function Layout() {
                 className: "top-bar",
                 style: {
                     height: topBarHeight,
-                    maxHeight: "20px",
+                    maxHeight: "40px",
                     display: "flex",
                     alignItems: "stretch"
                 },
