@@ -1,20 +1,27 @@
 import React from 'react';
-import { ReactFlow, Background, Controls } from '@xyflow/react';
+import { ReactFlow, Background, Controls, useNodesState } from '@xyflow/react';
+import type { Node } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import TaskNode from './WorkflowPanel/TaskNode';
 
-const initialNodes = [
-        { id: '1', position: { x: 0, y: 0 }, data: { label: 'Hello' } },
-        { id: '2', position: { x: 0, y: 100 }, data: { label: 'World' } },
+const initialNodes: Node[] = [
+        { id: '1', position: { x: 0, y: 0 }, data: { label: 'Hello' }, type: 'default' },
+        { id: 'task-1', position: { x: 200, y: 80 }, data: { label: 'Ingest Data', tool: 'ingest' }, type: 'task' },
 ];
 
-const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }];
+const initialEdges = [{ id: 'e1-2', source: '1', target: 'task-1' }];
 
 interface Props {
         collapsed?: boolean;
 }
 
+const nodeTypes = {
+        task: TaskNode,
+};
+
 export default function WorkflowCanvas({ collapsed = false }: Props) {
-        // When collapsed we can render a light preview or nothing
+        const [nodes, , setNodes] = useNodesState(initialNodes);
+
         if (collapsed) {
                 return (
                         <div style={{ padding: 12 }}>
@@ -25,7 +32,7 @@ export default function WorkflowCanvas({ collapsed = false }: Props) {
 
         return (
                 <div style={{ width: '100%', height: '480px' }}>
-                        <ReactFlow nodes={initialNodes} edges={initialEdges} fitView>
+                        <ReactFlow nodes={nodes} edges={initialEdges} fitView nodeTypes={nodeTypes}>
                                 <Background />
                                 <Controls />
                         </ReactFlow>

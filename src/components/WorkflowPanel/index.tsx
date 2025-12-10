@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import WorkflowCanvas from "../WorkflowCanvas";
+import { runWorkflow } from "../../lib/api";
 
 export default function WorkflowPanel() {
   const [leftOpen, setLeftOpen] = useState(true);
@@ -10,7 +11,7 @@ export default function WorkflowPanel() {
   const sideRef = useRef("left");
 
   useEffect(() => {
-    function onPointerMove(e) {
+    function onPointerMove(e: PointerEvent) {
       if (!resizingRef.current) return;
       if (sideRef.current === "left") {
         setLeftWidth(Math.max(60, Math.min(520, e.clientX)));
@@ -33,8 +34,8 @@ export default function WorkflowPanel() {
     };
   }, []);
 
-  function startResize(side) {
-    return (e) => {
+  function startResize(side: "left" | "right") {
+    return (e: React.PointerEvent) => {
       resizingRef.current = true;
       sideRef.current = side;
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -141,7 +142,23 @@ export default function WorkflowPanel() {
           </button>
         </div>
         {rightOpen && (
-          <div style={{ height: "100%", background: "#f3f4f6" }}>
+          <div style={{ height: "100%", background: "#f3f4f6", padding: 8 }}>
+            <div style={{ marginBottom: 12 }}>
+              <button
+                onClick={async () => {
+                  try {
+                    const payload = { nodes: [], edges: [] };
+                    const res = await runWorkflow(payload);
+                    alert(`Workflow run result: ${JSON.stringify(res)}`);
+                  } catch (err) {
+                    alert(String(err));
+                  }
+                }}
+                style={{ padding: '8px 12px', background: '#059669', color: 'white', border: 'none', borderRadius: 6 }}
+              >
+                Run Workflow
+              </button>
+            </div>
             Right Stack Content
           </div>
         )}

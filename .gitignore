@@ -4,3 +4,8 @@ build
 .vscode
 .env
 .DS_Store
+
+# Python virtual environments
+.venv/
+venv/
+.envrc
