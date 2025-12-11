@@ -1,6 +1,6 @@
 import React from 'react';
-import { ReactFlow, Background, Controls, useNodesState } from '@xyflow/react';
-import type { Node } from '@xyflow/react';
+import { ReactFlow, Background, Controls, useNodesState, applyNodeChanges } from '@xyflow/react';
+import type { Node, NodeChange } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import TaskNode from './WorkflowPanel/TaskNode';
 
@@ -13,14 +13,18 @@ const initialEdges = [{ id: 'e1-2', source: '1', target: 'task-1' }];
 
 interface Props {
         collapsed?: boolean;
+        nodes?: Node[];
+        setNodes?: React.Dispatch<React.SetStateAction<Node[]>>;
 }
 
 const nodeTypes = {
         task: TaskNode,
 };
 
-export default function WorkflowCanvas({ collapsed = false }: Props) {
-        const [nodes, , setNodes] = useNodesState(initialNodes);
+export default function WorkflowCanvas({ collapsed = false, nodes: controlledNodes, setNodes: setControlledNodes }: Props) {
+        const [internalNodes, , setInternalNodes] = useNodesState(initialNodes);
+        const nodes = controlledNodes ?? internalNodes;
+        const setNodes = setControlledNodes ?? setInternalNodes;
 
         if (collapsed) {
                 return (
@@ -30,12 +34,22 @@ export default function WorkflowCanvas({ collapsed = false }: Props) {
                 );
         }
 
-        return (
-                <div style={{ width: '100%', height: '480px' }}>
-                        <ReactFlow nodes={nodes} edges={initialEdges} fitView nodeTypes={nodeTypes}>
-                                <Background />
-                                <Controls />
-                        </ReactFlow>
-                </div>
-        );
+                        function onNodesChange(changes: NodeChange[]) {
+                                if (setControlledNodes) {
+                                        setControlledNodes((prev) => applyNodeChanges(changes, prev));
+                                } else {
+                                        // use the internal setter overload which accepts NodeChange[]
+                                        // cast to any to satisfy TypeScript overload resolution
+                                        (setInternalNodes as any)(changes);
+                                }
+                        }
+
+                return (
+                        <div style={{ width: '100%', height: '480px' }}>
+                                <ReactFlow nodes={nodes} edges={initialEdges} fitView nodeTypes={nodeTypes} onNodesChange={onNodesChange}>
+                                        <Background />
+                                        <Controls />
+                                </ReactFlow>
+                        </div>
+                );
 }

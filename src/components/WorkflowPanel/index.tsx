@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import WorkflowCanvas from "../WorkflowCanvas";
 import { runWorkflow } from "../../lib/api";
+import type { Node } from '@xyflow/react';
 
 export default function WorkflowPanel() {
   const [leftOpen, setLeftOpen] = useState(true);
@@ -9,6 +10,23 @@ export default function WorkflowPanel() {
   const [rightWidth, setRightWidth] = useState(rightOpen ? 220 : 40);
   const resizingRef = useRef(false);
   const sideRef = useRef("left");
+
+  // nodes state for the canvas (moved here so panel can add nodes)
+  const [nodes, setNodes] = useState<Node[]>([
+    { id: '1', position: { x: 0, y: 0 }, data: { label: 'Hello' }, type: 'default' } as Node,
+  ]);
+
+  function addIngestNode() {
+    const id = `ingest-${Date.now()}`;
+    const node: Node = {
+      id,
+      type: 'task',
+      position: { x: 200 + Math.floor(Math.random() * 200), y: 80 + Math.floor(Math.random() * 160) },
+      data: { label: 'Ingest Data', tool: 'ingest', description: 'Ingests sample datasets' },
+      draggable: true,
+    };
+    setNodes((s) => [...s, node]);
+  }
 
   useEffect(() => {
     function onPointerMove(e: PointerEvent) {
@@ -109,11 +127,19 @@ export default function WorkflowPanel() {
       </div>
 
       {/* WorkflowCanvas in the middle */}
+        {/* Toolbar above the canvas */}
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 8, zIndex: 40 }}>
+          <div style={{ background: 'white', padding: 6, borderRadius: 8, boxShadow: '0 6px 18px rgba(2,6,23,0.08)' }}>
+            <button onClick={addIngestNode} style={{ padding: '6px 10px', borderRadius: 6, background: '#2563eb', color: 'white', border: 'none' }}>
+              Add Ingest Node
+            </button>
+          </div>
+        </div>
       <div
         className="workflow-canvas"
         style={{ flex: 1, width: "100%", height: "100%", background: "white" }}
       >
-        <WorkflowCanvas />
+        <WorkflowCanvas nodes={nodes} setNodes={setNodes} />
       </div>
 
       {/* Right SideStack */}

@@ -25,8 +25,8 @@ export default function TaskNode({ id, data }: Props) {
   const statusColor = status === 'success' ? '#10b981' : status === 'error' ? '#ef4444' : status === 'running' ? '#60a5fa' : '#e5e7eb';
 
   return (
-    <div style={{ width: 240, borderRadius: 12, background: 'white', boxShadow: '0 6px 18px rgba(15,23,42,0.06)', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fafafa' }}>
+    <div className='Node-task' style={{ width: 240, borderRadius: 12, background: 'white', boxShadow: '0 6px 18px rgba(15,23,42,0.06)', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
+      <div className='Node-task-header' style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: '#fafafa' }}>
         <div style={{ width: 10, height: 10, borderRadius: 10, background: statusColor }} />
         <div style={{ fontWeight: 700, color: '#0f172a' }}>{data.label || 'Task'}</div>
       </div>
