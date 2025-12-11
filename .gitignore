@@ -8,4 +8,15 @@ build
 # Python virtual environments
 .venv/
 venv/
-.envrc
+backend/.venv/
+
+# bytecode
+__pycache__/
+*.pyc
+
+# editor / OS
+.vscode/
+.DS_Store
+
+# local DB / big sample data (do not commit large binaries)
+*.sqlite
