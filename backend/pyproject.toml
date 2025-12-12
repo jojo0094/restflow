@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "restFlow backend with workflow orchestration"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -9,6 +9,11 @@ dependencies = [
     "python-multipart>=0.0.20",
     "restgdf",
     "uvicorn[standard]>=0.38.0",
+    "sqlalchemy>=2.0.0",
+    "aiosqlite>=0.20.0",
+    "asyncpg>=0.30.0",
+    "alembic>=1.13.0",
+    "geopandas>=1.0.0",
 ]
 
 [tool.uv.sources]
