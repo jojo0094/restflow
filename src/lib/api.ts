@@ -37,6 +37,13 @@ export async function runTool(name: string, payload?: any) {
   return res.json();
 }
 
+export async function runToolDry(name: string, payload?: any) {
+  const body = Object.assign({}, payload || {}, { dry_run: true });
+  const res = await fetch(`${BASE}/tools/${name}`, { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) throw new Error('Tool dry run failed');
+  return res.json();
+}
+
 // ==================== New workflow API ====================
 
 export async function getNodeTypes() {

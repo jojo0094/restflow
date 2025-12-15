@@ -53,7 +53,12 @@ export default function TaskNode({ id, data }: Props) {
     try {
       // If a destination/table is provided, call the specialized ingest-table tool
       if (config.destination || selectedDest) {
-        const payload = { dataset: config.dataset || selectedDataset || undefined, table: config.destination || selectedDest };
+        const payload = {
+          dataset: config.dataset || selectedDataset || undefined,
+          table: config.destination || selectedDest,
+          column: config.column || selectedColumn || undefined,
+          values: config.values || selectedValues || undefined,
+        };
         await runTool('ingest-table', payload);
       } else {
         await runTool(selectedTool, config);

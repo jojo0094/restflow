@@ -1,4 +1,5 @@
 import traceback
+from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 import geopandas as gpd
@@ -20,16 +21,17 @@ async def list_tools():
 @router.post("/ingest")
 async def run_ingest(request: Request):
     try:
-        # Accept optional JSON payload: { dataset?: string, destination?: string, column?: string, values?: list }
+        # Accept optional JSON payload: { dataset?: string, destination?: string, column?: string, values?: list, dry_run?: bool }
         payload = await request.json() if request.headers.get('content-type', '').startswith('application/json') else {}
         dataset_name = payload.get('dataset') if isinstance(payload, dict) else None
         destination = payload.get('destination') if isinstance(payload, dict) else None
         filter_column = payload.get('column') if isinstance(payload, dict) else None
         filter_values = payload.get('values') if isinstance(payload, dict) else None
+        dry_run = payload.get('dry_run') if isinstance(payload, dict) else False
 
         from spatialite_gis import Workspace, IngestionApp, GeoDataFrameSource
         # NOTE: db_path is a dev-time hardcoded path; adjust for your environment
-        db_path = r'C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk_web.sqlite'
+        db_path = r'C:\Users\jkyawkyaw\\.spatialite_databases\3waters_wk_web.sqlite'
 
         # helper to ingest a GeoDataFrame (already read) into destination layer name
         def ingest_gdf(gdf, dest_name=None):
@@ -43,57 +45,60 @@ async def run_ingest(request: Request):
             ia.run()
 
         # helper to read, filter (if requested), and ingest from a file path
-        def ingest_path(path, dest_name=None, col=None, values=None):
+        def ingest_path(path, dest_name=None, col=None, values=None, dry_run_flag=False):
             gdf = gpd.read_file(path)
+            original_shape = gdf.shape
+
             # apply filtering if column and values provided
             if col and values:
-                try:
-                    # ensure values is a list
-                    if not isinstance(values, (list, tuple)):
-                        values_list = [values]
-                    else:
-                        values_list = list(values)
-                    # normalize whitespace and strip
-                    values_list = [v.strip() if isinstance(v, str) else v for v in values_list]
-                    # attempt to coerce values to column dtype to avoid mismatches (e.g. numeric columns)
-                    col_series = gdf[col]
+                # normalize to list
+                if not isinstance(values, (list, tuple)):
+                    values_list = [values]
+                else:
+                    values_list = list(values)
+                values_list = [v for v in values_list if v is not None]
+
+                # Attempt dtype-aware coercion, but prepare also lowercased string fallback
+                coerced_values = []
+                for v in values_list:
                     try:
-                        if pd.api.types.is_integer_dtype(col_series.dtype):
-                            coerced = []
-                            for v in values_list:
-                                try:
-                                    coerced.append(int(v))
-                                except Exception:
-                                    # skip values that can't be converted
-                                    pass
-                            values_list = coerced
-                        elif pd.api.types.is_float_dtype(col_series.dtype):
-                            coerced = []
-                            for v in values_list:
-                                try:
-                                    coerced.append(float(v))
-                                except Exception:
-                                    pass
-                            values_list = coerced
-                        elif pd.api.types.is_bool_dtype(col_series.dtype):
-                            def to_bool(x):
-                                if isinstance(x, bool):
-                                    return x
-                                if isinstance(x, str):
-                                    return x.lower() in ("1", "true", "t", "yes", "y")
-                                return bool(x)
-                            values_list = [to_bool(v) for v in values_list]
+                        if pd.api.types.is_integer_dtype(gdf[col].dtype):
+                            coerced_values.append(int(v))
+                        elif pd.api.types.is_float_dtype(gdf[col].dtype):
+                            coerced_values.append(float(v))
+                        elif pd.api.types.is_bool_dtype(gdf[col].dtype):
+                            if isinstance(v, str):
+                                lv = v.strip().lower()
+                                coerced_values.append(lv in ("1", "true", "t", "yes", "y"))
+                            else:
+                                coerced_values.append(bool(v))
                         else:
-                            values_list = [str(v) for v in values_list]
+                            coerced_values.append(str(v))
                     except Exception:
-                        # if coercion fails, fall back to string comparison
-                        values_list = [str(v) for v in values_list]
-                    gdf = gdf[gdf[col].isin(values_list)]
+                        coerced_values.append(str(v))
+
+                # Primary filter: exact match using dtype-coerced values
+                try:
+                    filtered = gdf[gdf[col].isin(coerced_values)]
                 except Exception:
-                    # if filtering fails, raise to return error to client
-                    raise
-            # if resulting gdf is empty, still proceed (ingest may create empty table), but we inform
+                    filtered = gdf.iloc[0:0]
+
+                # If primary filter yields nothing, try case-insensitive string matching as a fallback
+                if filtered.shape[0] == 0 and any(isinstance(x, str) for x in coerced_values):
+                    lowered = [str(x).lower() for x in coerced_values]
+                    mask = gdf[col].astype(str).str.lower().isin(lowered)
+                    filtered = gdf[mask]
+
+                gdf = filtered
+
+            # If dry_run, return diagnostic info instead of writing
+            if dry_run_flag:
+                sample = gdf.head(5).to_json(orient="records")
+                return {"dataset": Path(path).name, "original_shape": original_shape, "final_shape": gdf.shape, "sample": sample}
+
+            # perform actual ingestion
             ingest_gdf(gdf, dest_name=dest_name)
+            return {"dataset": Path(path).name, "original_shape": original_shape, "final_shape": gdf.shape}
 
         with Workspace(db_path) as ws:
             # If a specific dataset was requested, ingest only that dataset
@@ -102,11 +107,17 @@ async def run_ingest(request: Request):
                 if not path:
                     return JSONResponse(content={"error": "dataset not found"}, status_code=404)
                 # use provided destination string as layer name if present and apply filtering if provided
-                ingest_path(path, dest_name=destination, col=filter_column, values=filter_values)
+                res = ingest_path(path, dest_name=destination, col=filter_column, values=filter_values, dry_run_flag=dry_run)
+                return JSONResponse(content={"status": "ok", "result": res})
             else:
                 # ingest all sample datasets (no filtering applied for bulk ingest)
+                results = []
                 wp = gpd.read_file(r"C:\Repos\restFlow\backend\sampledata\water_points_fixed.gpkg")
                 wl = gpd.read_file(r"C:\Repos\restFlow\backend\sampledata\water_lines_fixed.gpkg")
+                if dry_run:
+                    results.append({"source": "water_points_fixed.gpkg", "rows": wp.shape[0]})
+                    results.append({"source": "water_lines_fixed.gpkg", "rows": wl.shape[0]})
+                    return JSONResponse(content={"status": "ok", "results": results})
                 wp_src = GeoDataFrameSource(wp, 'water_points_fixed')
                 wl_src = GeoDataFrameSource(wl, 'water_lines_fixed')
                 ia = IngestionApp(ws, wp_src)
@@ -141,6 +152,7 @@ async def run_ingest_table(request: Request):
 
         def ingest_path(path, dest_name=None, col=None, values=None):
             gdf = gpd.read_file(path)
+            original_shape = gdf.shape
             # apply filtering if column and values provided
             if col and values:
                 try:
@@ -148,7 +160,22 @@ async def run_ingest_table(request: Request):
                         values_list = [values]
                     else:
                         values_list = list(values)
-                    gdf = gdf[gdf[col].isin(values_list)]
+                    # try simple coercion fallback
+                    try:
+                        if pd.api.types.is_integer_dtype(gdf[col].dtype):
+                            values_list = [int(v) for v in values_list]
+                        elif pd.api.types.is_float_dtype(gdf[col].dtype):
+                            values_list = [float(v) for v in values_list]
+                        else:
+                            values_list = [str(v) for v in values_list]
+                    except Exception:
+                        values_list = [str(v) for v in values_list]
+                    filtered = gdf[gdf[col].isin(values_list)]
+                    if filtered.shape[0] == 0 and any(isinstance(x, str) for x in values_list):
+                        lowered = [str(x).lower() for x in values_list]
+                        mask = gdf[col].astype(str).str.lower().isin(lowered)
+                        filtered = gdf[mask]
+                    gdf = filtered
                 except Exception:
                     raise
             # always use provided dest_name when calling ingest-table
