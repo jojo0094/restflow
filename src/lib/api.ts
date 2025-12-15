@@ -45,6 +45,30 @@ export async function getNodeTypes() {
   return res.json();
 }
 
+export async function listDatasets() {
+  const res = await fetch(`${BASE}/tools/datasets`);
+  if (!res.ok) throw new Error('Failed to list datasets');
+  return res.json();
+}
+
+export async function getDatasetColumns(name: string) {
+  const res = await fetch(`${BASE}/tools/datasets/${encodeURIComponent(name)}/columns`);
+  if (!res.ok) throw new Error('Failed to get dataset columns');
+  return res.json();
+}
+
+export async function getDatasetColumnValues(name: string, col: string) {
+  const res = await fetch(`${BASE}/tools/datasets/${encodeURIComponent(name)}/columns/${encodeURIComponent(col)}/values`);
+  if (!res.ok) throw new Error('Failed to get column values');
+  return res.json();
+}
+
+export async function listDestinationTables() {
+  const res = await fetch(`${BASE}/tools/destination-tables`);
+  if (!res.ok) throw new Error('Failed to list destination tables');
+  return res.json();
+}
+
 export async function createWorkflow(workflow: any) {
   const res = await fetch(`${BASE}/api/workflows`, {
     method: 'POST',

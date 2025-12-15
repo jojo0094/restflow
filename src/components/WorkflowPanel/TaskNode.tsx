@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { runTool, getNodeTypes } from '../../lib/api';
+import { runTool, getNodeTypes, listDatasets, getDatasetColumns, getDatasetColumnValues, listDestinationTables } from '../../lib/api';
 
 type NodeType = {
   type: string;
@@ -28,10 +28,21 @@ export default function TaskNode({ id, data }: Props) {
   const [selectedType, setSelectedType] = useState(data.type || 'ingest');
   const [selectedTool, setSelectedTool] = useState(data.tool || 'ingest');
   const [config, setConfig] = useState(data.config || {});
+  const [datasets, setDatasets] = useState<string[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [uniqueValues, setUniqueValues] = useState<any[]>([]);
+  const [selectedDataset, setSelectedDataset] = useState(config.dataset || '');
+  const [selectedColumn, setSelectedColumn] = useState(config.column || '');
+  const [selectedValues, setSelectedValues] = useState<any[]>(config.values || []);
+  const [destTables, setDestTables] = useState<string[]>([]);
+  const [selectedDest, setSelectedDest] = useState(config.destination || '');
 
   useEffect(() => {
     // Fetch available node types on mount
     getNodeTypes().then(setNodeTypes).catch(console.error);
+  // fetch dataset list and dest tables for filter UI
+  listDatasets().then((r) => setDatasets(r.datasets || [])).catch(() => setDatasets([]));
+  listDestinationTables().then((r) => setDestTables(r.tables || [])).catch(() => setDestTables([]));
   }, []);
 
   const currentNodeType = nodeTypes.find(nt => nt.type === selectedType);
@@ -40,7 +51,13 @@ export default function TaskNode({ id, data }: Props) {
   async function onRun() {
     setStatus('running');
     try {
-      await runTool(selectedTool, config);
+      // If a destination/table is provided, call the specialized ingest-table tool
+      if (config.destination || selectedDest) {
+        const payload = { dataset: config.dataset || selectedDataset || undefined, table: config.destination || selectedDest };
+        await runTool('ingest-table', payload);
+      } else {
+        await runTool(selectedTool, config);
+      }
       setStatus('success');
       setTimeout(() => setStatus('idle'), 2200);
     } catch (e) {
@@ -147,6 +164,90 @@ export default function TaskNode({ id, data }: Props) {
                     />
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Filter-specific UI */}
+            {selectedType === 'filter' && (
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Dataset</label>
+                <select value={selectedDataset} onChange={async (e) => {
+                  const v = e.target.value; setSelectedDataset(v); setSelectedColumn(''); setColumns([]); setUniqueValues([]);
+                  setConfig({ ...config, dataset: v });
+                  if (v) {
+                    const cols = await getDatasetColumns(v).catch(() => ({ columns: [] }));
+                    setColumns(cols.columns || []);
+                  }
+                }} style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }}>
+                  <option value="">-- select dataset --</option>
+                  {datasets.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+
+                <div style={{ height: 8 }} />
+
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Column</label>
+                <select value={selectedColumn} onChange={async (e) => {
+                  const c = e.target.value; setSelectedColumn(c); setUniqueValues([]);
+                  setConfig({ ...config, column: c });
+                  if (c && selectedDataset) {
+                    const vals = await getDatasetColumnValues(selectedDataset, c).catch(() => ({ values: [] }));
+                    setUniqueValues(vals.values || []);
+                  }
+                }} style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }}>
+                  <option value="">-- select column --</option>
+                  {columns.map(col => <option key={col} value={col}>{col}</option>)}
+                </select>
+
+                <div style={{ height: 8 }} />
+
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Values (multi)</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 160, overflowY: 'auto', padding: 6, border: '1px solid #e2e8f0', borderRadius: 6 }}>
+                  {uniqueValues.length === 0 && <div style={{ color: '#94a3b8', fontSize: 12 }}>No values</div>}
+                  {uniqueValues.map((v) => {
+                    const key = String(v);
+                    const checked = selectedValues.map(String).includes(key);
+                    return (
+                      <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const cur = selectedValues.map(String);
+                            if (e.target.checked) {
+                              cur.push(key);
+                            } else {
+                              const idx = cur.indexOf(key);
+                              if (idx >= 0) cur.splice(idx, 1);
+                            }
+                            const newVals = cur.map((x) => {
+                              // try to coerce numeric strings back to numbers when appropriate
+                              if (!Number.isNaN(Number(x)) && String(Number(x)) === x) return Number(x);
+                              return x;
+                            });
+                            setSelectedValues(newVals as any[]);
+                            setConfig({ ...config, values: newVals });
+                          }}
+                        />
+                        <span>{String(v)}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div style={{ height: 8 }} />
+
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Destination Table</label>
+                {/* Free-text input for destination table name with suggestions via datalist */}
+                <input
+                  list={`dest-table-suggestions-${id}`}
+                  value={selectedDest}
+                  onChange={(e) => { setSelectedDest(e.target.value); setConfig({ ...config, destination: e.target.value }); }}
+                  placeholder="enter destination table name"
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }}
+                />
+                <datalist id={`dest-table-suggestions-${id}`}>
+                  {destTables.map(t => <option key={t} value={t}>{t}</option>)}
+                </datalist>
               </div>
             )}
 
