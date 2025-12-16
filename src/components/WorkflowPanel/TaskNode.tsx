@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Handle, Position } from '@xyflow/react';
-import { runTool, getNodeTypes, listDatasets, getDatasetColumns, getDatasetColumnValues, listDestinationTables } from '../../lib/api';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
+import { useAtom } from 'jotai';
+import { runTool, getNodeTypes, listDatasets, getDatasetColumns, getDatasetColumnValues, listDestinationTables, executeNodeOperation } from '../../lib/api';
+import { sessionAtom } from '../../atoms/sessionAtom';
+import type { IngestOperation, FilterOperation, BufferOperation } from '../../lib/engine/operations';
+import type { TableRef } from '../../lib/engine/types';
 
 type NodeType = {
   type: string;
@@ -18,6 +22,9 @@ type Props = {
     tool?: string;
     description?: string;
     config?: Record<string, any>;
+    // NEW: Store output table reference from last run
+    outputTable?: TableRef;
+    rowCount?: number;
   };
 };
 
@@ -36,6 +43,45 @@ export default function TaskNode({ id, data }: Props) {
   const [selectedValues, setSelectedValues] = useState<any[]>(config.values || []);
   const [destTables, setDestTables] = useState<string[]>([]);
   const [selectedDest, setSelectedDest] = useState(config.destination || '');
+  
+  // NEW: Session management and engine mode toggle
+  const [sessionId] = useAtom(sessionAtom);
+  const [useNewEngine, setUseNewEngine] = useState(true); // Toggle between legacy and new engine
+  const [lastResult, setLastResult] = useState<string>(''); // Show result message
+  const [outputMode, setOutputMode] = useState<'temporary' | 'persistent'>('temporary'); // Where to store output
+  const [selectedInputSource, setSelectedInputSource] = useState<'connected' | 'manual'>('connected'); // Input source selection
+  
+  // NEW: Access ReactFlow state to get connected nodes
+  const reactFlowInstance = useReactFlow();
+  
+  /**
+   * Get input TableRef from connected source node
+   * Returns the outputTable from the first connected source node, or undefined
+   */
+  function getInputFromConnectedNode(): TableRef | undefined {
+    const edges = reactFlowInstance.getEdges();
+    const nodes = reactFlowInstance.getNodes();
+    
+    // Find edges where this node is the target
+    const incomingEdges = edges.filter(edge => edge.target === id);
+    
+    if (incomingEdges.length === 0) {
+      return undefined;
+    }
+    
+    // Get the first source node's output
+    const firstEdge = incomingEdges[0];
+    if (!firstEdge) return undefined;
+    
+    const sourceNodeId = firstEdge.source;
+    const sourceNode = nodes.find(n => n.id === sourceNodeId);
+    
+    if (!sourceNode || !sourceNode.data.outputTable) {
+      return undefined;
+    }
+    
+    return sourceNode.data.outputTable as TableRef;
+  }
 
   useEffect(() => {
     // Fetch available node types on mount
@@ -48,25 +94,163 @@ export default function TaskNode({ id, data }: Props) {
   const currentNodeType = nodeTypes.find(nt => nt.type === selectedType);
   const availableTools = currentNodeType?.tools || [];
 
+  /**
+   * Run the node using NEW engine API
+   * Builds an Operation object and calls executeNodeOperation
+   */
+  async function runWithNewEngine() {
+    if (!sessionId) {
+      throw new Error('No active session. Session is required for new engine API.');
+    }
+
+    // Determine input table based on selection
+    let inputTable: TableRef | undefined;
+    
+    if (selectedType !== 'ingest') {
+      if (selectedInputSource === 'connected') {
+        inputTable = getInputFromConnectedNode();
+      } else if (selectedInputSource === 'manual' && config.manualInputTable) {
+        // Parse manual input (e.g., "temp_abc123" or "my_persistent_table")
+        const tableName = config.manualInputTable;
+        if (tableName.startsWith('temp_')) {
+          inputTable = { kind: 'temporary', name: tableName, sessionId };
+        } else {
+          inputTable = { kind: 'persistent', name: tableName };
+        }
+      } else {
+        inputTable = data.outputTable; // Fallback to stored output
+      }
+    }
+    
+    // Determine destination based on output mode
+    let destination = selectedDest;
+    if (outputMode === 'temporary') {
+      destination = undefined; // Let backend auto-generate temp name
+    } else if (outputMode === 'persistent' && !destination) {
+      destination = `${selectedType}_${Date.now()}`; // Auto-generate persistent name
+    }
+
+    // Build operation based on selectedType
+    if (selectedType === 'ingest') {
+      // IngestOperation - does not require input
+      if (!selectedDataset) {
+        throw new Error('Please select a dataset to ingest');
+      }
+      
+      const operation: IngestOperation = {
+        type: 'ingest',
+        source: { kind: 'dataset', name: selectedDataset },
+        filters: selectedColumn && selectedValues.length > 0 
+          ? [{ column: selectedColumn, operator: 'in', value: selectedValues }]
+          : [],
+        destination,
+      };
+      
+      const result = await executeNodeOperation(sessionId, operation);
+      
+      // Store output table in node data for next node to consume
+      if (result.outputTable) {
+        data.outputTable = result.outputTable;
+        data.rowCount = result.rowCount;
+      }
+      
+      const storageInfo = outputMode === 'temporary' ? '⚡ in-memory' : '💾 persistent';
+      setLastResult(result.message || `Ingested ${result.rowCount} rows (${storageInfo})`);
+      return;
+    }
+
+    if (selectedType === 'filter') {
+      // FilterOperation - requires input
+      if (!inputTable) {
+        throw new Error('Filter requires an input table. Connect a source node or specify manual input.');
+      }
+
+      const operation: FilterOperation = {
+        type: 'filter',
+        input: inputTable,
+        filters: selectedColumn && selectedValues.length > 0 
+          ? [{ column: selectedColumn, operator: 'in', value: selectedValues }]
+          : [],
+        destination,
+      };
+
+      const result = await executeNodeOperation(sessionId, operation);
+      
+      if (result.outputTable) {
+        data.outputTable = result.outputTable;
+        data.rowCount = result.rowCount;
+      }
+      
+      const storageInfo = outputMode === 'temporary' ? '⚡ in-memory' : '💾 persistent';
+      setLastResult(result.message || `Filtered to ${result.rowCount} rows (${storageInfo})`);
+      return;
+    }
+
+    if (selectedType === 'buffer' || selectedTool === 'buffer') {
+      // BufferOperation - requires input and distance
+      if (!inputTable) {
+        throw new Error('Buffer requires an input table. Connect a source node or specify manual input.');
+      }
+
+      const distance = Number(config.distance || 100);
+      
+      const operation: BufferOperation = {
+        type: 'buffer',
+        input: inputTable,
+        distance,
+        destination,
+      };
+
+      const result = await executeNodeOperation(sessionId, operation);
+      
+      if (result.outputTable) {
+        data.outputTable = result.outputTable;
+        data.rowCount = result.rowCount;
+      }
+      
+      const storageInfo = outputMode === 'temporary' ? '⚡ in-memory' : '💾 persistent';
+      setLastResult(result.message || `Buffered ${result.rowCount} features (${storageInfo})`);
+      return;
+    }
+
+    throw new Error(`Operation type '${selectedType}' not yet supported in new engine`);
+  }
+
+  /**
+   * Run the node using LEGACY API
+   * Direct HTTP call to /tools/{tool}
+   */
+  async function runWithLegacyEngine() {
+    // If a destination/table is provided, call the specialized ingest-table tool
+    if (config.destination || selectedDest) {
+      const payload = {
+        dataset: config.dataset || selectedDataset || undefined,
+        table: config.destination || selectedDest,
+        column: config.column || selectedColumn || undefined,
+        values: config.values || selectedValues || undefined,
+      };
+      await runTool('ingest-table', payload);
+    } else {
+      await runTool(selectedTool, config);
+    }
+  }
+
   async function onRun() {
     setStatus('running');
+    setLastResult('');
+    
     try {
-      // If a destination/table is provided, call the specialized ingest-table tool
-      if (config.destination || selectedDest) {
-        const payload = {
-          dataset: config.dataset || selectedDataset || undefined,
-          table: config.destination || selectedDest,
-          column: config.column || selectedColumn || undefined,
-          values: config.values || selectedValues || undefined,
-        };
-        await runTool('ingest-table', payload);
+      if (useNewEngine) {
+        await runWithNewEngine();
       } else {
-        await runTool(selectedTool, config);
+        await runWithLegacyEngine();
       }
+      
       setStatus('success');
       setTimeout(() => setStatus('idle'), 2200);
     } catch (e) {
-      console.error(e);
+      console.error('[TaskNode] Run failed:', e);
+      setLastResult(e instanceof Error ? e.message : String(e));
       setStatus('error');
       setTimeout(() => setStatus('idle'), 3000);
     }
@@ -256,6 +440,102 @@ export default function TaskNode({ id, data }: Props) {
               </div>
             )}
 
+            {/* Input Source Selection (for filter/buffer nodes) */}
+            {useNewEngine && (selectedType === 'filter' || selectedType === 'buffer') && (
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Input Source</label>
+                <select 
+                  value={selectedInputSource} 
+                  onChange={(e) => setSelectedInputSource(e.target.value as 'connected' | 'manual')}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 12 }}
+                >
+                  <option value="connected">From Connected Node</option>
+                  <option value="manual">Manual Table Reference</option>
+                </select>
+                
+                {selectedInputSource === 'connected' && (
+                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 4, padding: '4px 6px', background: '#f8fafc', borderRadius: 4 }}>
+                    {(() => {
+                      const inputTable = getInputFromConnectedNode();
+                      if (!inputTable) return '⚠️ No node connected (connect an edge first)';
+                      
+                      if (inputTable.kind === 'file') {
+                        return `📊 Using file: ${inputTable.path}`;
+                      } else {
+                        return `📊 Using ${inputTable.kind}: ${inputTable.name}`;
+                      }
+                    })()}
+                  </div>
+                )}
+                
+                {selectedInputSource === 'manual' && (
+                  <div style={{ marginTop: 8 }}>
+                    <label style={{ display: 'block', fontSize: 10, color: '#64748b', marginBottom: 4 }}>Table Name</label>
+                    <input
+                      type="text"
+                      value={config.manualInputTable || ''}
+                      onChange={(e) => setConfig({ ...config, manualInputTable: e.target.value })}
+                      placeholder="temp_abc123 or persistent_table"
+                      style={{ width: '100%', padding: '4px 6px', borderRadius: 4, border: '1px solid #e2e8f0', fontSize: 11 }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Output Storage Mode */}
+            {useNewEngine && (
+              <div>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4 }}>Output Storage</label>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  <label style={{ flex: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, border: `2px solid ${outputMode === 'temporary' ? '#3b82f6' : '#e2e8f0'}`, background: outputMode === 'temporary' ? '#eff6ff' : '#fff' }}>
+                    <input 
+                      type="radio" 
+                      checked={outputMode === 'temporary'} 
+                      onChange={() => setOutputMode('temporary')}
+                    />
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#0f172a' }}>⚡ In-Memory</div>
+                      <div style={{ fontSize: 9, color: '#64748b' }}>Fast, temp tables</div>
+                    </div>
+                  </label>
+                  
+                  <label style={{ flex: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, border: `2px solid ${outputMode === 'persistent' ? '#3b82f6' : '#e2e8f0'}`, background: outputMode === 'persistent' ? '#eff6ff' : '#fff' }}>
+                    <input 
+                      type="radio" 
+                      checked={outputMode === 'persistent'} 
+                      onChange={() => setOutputMode('persistent')}
+                    />
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#0f172a' }}>💾 Persistent</div>
+                      <div style={{ fontSize: 9, color: '#64748b' }}>Save to database</div>
+                    </div>
+                  </label>
+                </div>
+                
+                {outputMode === 'persistent' && (
+                  <div style={{ fontSize: 10, color: '#64748b', padding: '4px 6px', background: '#fefce8', border: '1px solid #fef08a', borderRadius: 4 }}>
+                    💡 Will save to "{selectedDest || 'auto_generated_name'}"
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Engine Mode Toggle */}
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#64748b', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={useNewEngine}
+                  onChange={(e) => setUseNewEngine(e.target.checked)}
+                />
+                <span>Use New Engine API</span>
+              </label>
+              <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                {useNewEngine ? '✨ Session-based with temp tables' : '⚙️ Legacy direct API'}
+              </div>
+            </div>
+
             <button onClick={() => setEditMode(false)} style={{ padding: '6px 10px', background: '#f1f5f9', color: '#0f172a', border: 'none', borderRadius: 6, fontSize: 12, cursor: 'pointer' }}>
               Done
             </button>
@@ -263,6 +543,20 @@ export default function TaskNode({ id, data }: Props) {
         ) : (
           <>
             <div style={{ minHeight: 36, marginBottom: 10 }}>{data.description || currentNodeType?.description || 'No description.'}</div>
+
+            {/* Show last result/output info */}
+            {lastResult && (
+              <div style={{ padding: '6px 8px', background: status === 'error' ? '#fee2e2' : '#f0fdf4', border: `1px solid ${status === 'error' ? '#fecaca' : '#bbf7d0'}`, borderRadius: 6, marginBottom: 10, fontSize: 11, color: status === 'error' ? '#b91c1c' : '#15803d' }}>
+                {lastResult}
+              </div>
+            )}
+
+            {/* Show output table info if available */}
+            {data.outputTable && data.rowCount !== undefined && (
+              <div style={{ padding: '6px 8px', background: '#eff6ff', border: '1px solid #dbeafe', borderRadius: 6, marginBottom: 10, fontSize: 10, color: '#1e40af' }}>
+                📊 Output: {data.outputTable.kind === 'temporary' ? 'temp' : data.outputTable.kind} table "{data.outputTable.kind === 'file' ? data.outputTable.path : data.outputTable.name}" ({data.rowCount} rows)
+              </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', gap: 6 }}>

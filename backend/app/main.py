@@ -272,34 +272,127 @@ async def execute_ingest_operation(session: WorkspaceSession, op: dict) -> dict:
 
 async def execute_filter_operation(session: WorkspaceSession, op: dict) -> dict:
     """
-    Execute a filter operation.
+    Execute a filter operation on an existing table.
     
     Operation format:
     {
       "type": "filter",
       "input": {"kind": "temporary", "name": "temp_abc123", "sessionId": "..."},
-      "filters": [...],
+      "filters": [
+        {"column": "status", "operator": "equals", "value": "active"},
+        {"column": "type", "operator": "in", "value": ["well", "borehole"]}
+      ],
       "destination": "optional_name"
     }
     """
-    # TODO: Implement filter executor
-    raise NotImplementedError("Filter operation not yet implemented")
+    import geopandas as gpd
+    import pandas as pd
+    
+    input_ref = op.get("input", {})
+    filters = op.get("filters", [])
+    destination = op.get("destination")
+    
+    # Read input table
+    if input_ref.get("kind") == "temporary":
+        table_name = input_ref.get("name")
+        gdf = session.read_table(table_name)
+    elif input_ref.get("kind") == "persistent":
+        table_name = input_ref.get("name")
+        # Read from persistent storage
+        gdf = gpd.read_file(session.db_path, layer=table_name)
+    else:
+        raise ValueError(f"Unsupported input kind: {input_ref.get('kind')}")
+    
+    original_count = len(gdf)
+    
+    # Apply filters
+    for filter_obj in filters:
+        column = filter_obj.get("column")
+        operator = filter_obj.get("operator")
+        value = filter_obj.get("value")
+        
+        if operator == "equals":
+            gdf = gdf[gdf[column] == value]
+        elif operator == "not_equals":
+            gdf = gdf[gdf[column] != value]
+        elif operator == "in":
+            values_list = value if isinstance(value, list) else [value]
+            gdf = gdf[gdf[column].isin(values_list)]
+        elif operator == "not_in":
+            values_list = value if isinstance(value, list) else [value]
+            gdf = gdf[~gdf[column].isin(values_list)]
+        elif operator == "greater_than":
+            gdf = gdf[gdf[column] > value]
+        elif operator == "less_than":
+            gdf = gdf[gdf[column] < value]
+        elif operator == "contains":
+            gdf = gdf[gdf[column].astype(str).str.contains(str(value), case=False, na=False)]
+    
+    # Ingest filtered result as new temp table
+    output_table = session.ingest_gdf(gdf, table_name=destination, temporary=True)
+    
+    return {
+        "success": True,
+        "outputTable": {
+            "kind": "temporary",
+            "name": output_table,
+            "sessionId": session.session_id
+        },
+        "rowCount": len(gdf),
+        "message": f"Filtered to {len(gdf)} rows (from {original_count})"
+    }
 
 
 async def execute_buffer_operation(session: WorkspaceSession, op: dict) -> dict:
     """
-    Execute a buffer operation.
+    Execute a buffer operation (create buffer zones around geometries).
     
     Operation format:
     {
       "type": "buffer",
-      "input": {...},
+      "input": {"kind": "temporary", "name": "temp_abc123", "sessionId": "..."},
       "distance": 100,
       "destination": "optional_name"
     }
     """
-    # TODO: Implement buffer executor
-    raise NotImplementedError("Buffer operation not yet implemented")
+    import geopandas as gpd
+    
+    input_ref = op.get("input", {})
+    distance = op.get("distance")
+    destination = op.get("destination")
+    
+    if distance is None:
+        raise ValueError("Buffer operation requires 'distance' parameter")
+    
+    # Read input table
+    if input_ref.get("kind") == "temporary":
+        table_name = input_ref.get("name")
+        gdf = session.read_table(table_name)
+    elif input_ref.get("kind") == "persistent":
+        table_name = input_ref.get("name")
+        gdf = gpd.read_file(session.db_path, layer=table_name)
+    else:
+        raise ValueError(f"Unsupported input kind: {input_ref.get('kind')}")
+    
+    original_count = len(gdf)
+    
+    # Apply buffer
+    buffered_gdf = gdf.copy()
+    buffered_gdf['geometry'] = gdf.geometry.buffer(distance)
+    
+    # Ingest buffered result as new temp table
+    output_table = session.ingest_gdf(buffered_gdf, table_name=destination, temporary=True)
+    
+    return {
+        "success": True,
+        "outputTable": {
+            "kind": "temporary",
+            "name": output_table,
+            "sessionId": session.session_id
+        },
+        "rowCount": len(buffered_gdf),
+        "message": f"Buffered {original_count} features by {distance} units"
+    }
 
 
 # ============================================================================

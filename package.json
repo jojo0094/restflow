@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@xyflow/react": "^12.10.0",
+    "jotai": "^2.16.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },

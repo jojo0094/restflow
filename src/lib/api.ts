@@ -20,8 +20,13 @@
 
 import type { IDataEngine, SessionId, Operation, OperationResult } from './engine';
 import { RemoteDataEngine } from './engine';
+import { engineReadyAtom } from '../atoms/engineAtom';
+import { getDefaultStore } from 'jotai';
 
 const BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+// Get the default Jotai store (allows setting atoms outside React components)
+const store = getDefaultStore();
 
 // ============================================================================
 // ENGINE INITIALIZATION
@@ -62,22 +67,33 @@ let engine: IDataEngine;
  */
 export async function initEngine(mode: 'remote' | 'wasm' = 'remote'): Promise<void> {
   console.log(`[API] Initializing ${mode} engine...`);
-  
-  if (mode === 'remote') {
-    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-    engine = new RemoteDataEngine(baseUrl);
-  } else if (mode === 'wasm') {
-    // FUTURE: Load WASM engine
-    // const { WasmDataEngine } = await import('./engine/wasm-engine');
-    // engine = new WasmDataEngine();
-    throw new Error('WASM mode not yet implemented');
-  } else {
-    throw new Error(`Unknown engine mode: ${mode}`);
-  }
 
-  // Initialize engine (connects to server, loads WASM, etc.)
-  if (engine.init) {
-    await engine.init();
+  try {
+    if (mode === 'remote') {
+      const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+      console.log(`[API] Using base URL: ${baseUrl}`);
+      engine = new RemoteDataEngine(baseUrl);
+    } else if (mode === 'wasm') {
+      console.log('[API] WASM mode selected (not implemented)');
+      throw new Error('WASM mode not yet implemented');
+    } else {
+      console.error(`[API] Unknown engine mode: ${mode}`);
+      throw new Error(`Unknown engine mode: ${mode}`);
+    }
+
+    if (engine.init) {
+      console.log('[API] Calling engine.init()...');
+      await engine.init();
+      console.log('[API] engine.init() completed successfully');
+    } else {
+      console.warn('[API] engine.init() method not found');
+    }
+
+    store.set(engineReadyAtom, true);
+    console.log('[API] engineReadyAtom set to true');
+  } catch (error) {
+    console.error('[API] Error during engine initialization:', error);
+    throw error;
   }
 
   console.log('[API] Engine initialized successfully');
