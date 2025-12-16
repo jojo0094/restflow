@@ -33,7 +33,8 @@ app.add_middleware(
 # ============================================================================
 
 # Initialize session manager with default DB path
-default_db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dev.db'))
+# NOTE: This should point to the SpatiaLite workspace database, NOT the workflow metadata DB
+default_db_path = r'C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk_web.sqlite'
 session_manager = SessionManager(default_db_path)
 
 
@@ -208,6 +209,70 @@ async def rollback_session(session_id: str):
 # OPERATION EXECUTORS (implement the actual logic)
 # ============================================================================
 
+def apply_robust_filter(gdf: 'gpd.GeoDataFrame', column: str, values: list) -> 'gpd.GeoDataFrame':
+    """
+    Apply robust filtering with type coercion and case-insensitive fallback.
+    
+    This matches the legacy logic from tools.py to handle:
+    - Type mismatches (e.g., string values vs int column)
+    - Case-insensitive string matching
+    - Null value handling
+    
+    Args:
+        gdf: GeoDataFrame to filter
+        column: Column name to filter on
+        values: List of values to match
+    
+    Returns:
+        Filtered GeoDataFrame
+    """
+    import pandas as pd
+    
+    # Normalize to list and remove None values
+    if not isinstance(values, (list, tuple)):
+        values_list = [values]
+    else:
+        values_list = list(values)
+    values_list = [v for v in values_list if v is not None]
+    
+    if not values_list:
+        # No values to filter on - return empty
+        return gdf.iloc[0:0]
+    
+    # Attempt dtype-aware coercion
+    coerced_values = []
+    for v in values_list:
+        try:
+            if pd.api.types.is_integer_dtype(gdf[column].dtype):
+                coerced_values.append(int(v))
+            elif pd.api.types.is_float_dtype(gdf[column].dtype):
+                coerced_values.append(float(v))
+            elif pd.api.types.is_bool_dtype(gdf[column].dtype):
+                if isinstance(v, str):
+                    lv = v.strip().lower()
+                    coerced_values.append(lv in ("1", "true", "t", "yes", "y"))
+                else:
+                    coerced_values.append(bool(v))
+            else:
+                coerced_values.append(str(v))
+        except Exception:
+            coerced_values.append(str(v))
+    
+    # Primary filter: exact match using dtype-coerced values
+    try:
+        filtered = gdf[gdf[column].isin(coerced_values)]
+    except Exception:
+        filtered = gdf.iloc[0:0]
+    
+    # If primary filter yields nothing, try case-insensitive string matching as fallback
+    if filtered.shape[0] == 0 and any(isinstance(x, str) for x in coerced_values):
+        lowered = [str(x).lower() for x in coerced_values]
+        mask = gdf[column].astype(str).str.lower().isin(lowered)
+        filtered = gdf[mask]
+    
+    return filtered
+
+
 async def execute_ingest_operation(session: WorkspaceSession, op: dict) -> dict:
     """
     Execute an ingest operation.
@@ -216,7 +281,7 @@ async def execute_ingest_operation(session: WorkspaceSession, op: dict) -> dict:
     {
       "type": "ingest",
       "source": {"kind": "dataset", "name": "water_points"},
-      "filters": [{"column": "status", "operator": "equals", "value": "active"}],
+      "filters": [{"column": "status", "operator": "in", "value": ["active", "inactive"]}],
       "destination": "optional_table_name"
     }
     """
@@ -243,16 +308,24 @@ async def execute_ingest_operation(session: WorkspaceSession, op: dict) -> dict:
     gdf = gpd.read_file(file_path)
     original_count = len(gdf)
     
-    # Apply filters if provided
+    # Apply filters if provided (using robust filtering logic)
     for filter_obj in filters:
         column = filter_obj.get("column")
         operator = filter_obj.get("operator")
         value = filter_obj.get("value")
         
         if operator == "equals":
-            gdf = gdf[gdf[column] == value]
+            # Use robust filter for single value
+            gdf = apply_robust_filter(gdf, column, [value])
         elif operator == "in":
-            gdf = gdf[gdf[column].isin(value if isinstance(value, list) else [value])]
+            # Use robust filter for multiple values
+            values_list = value if isinstance(value, list) else [value]
+            gdf = apply_robust_filter(gdf, column, values_list)
+        elif operator == "not_in":
+            values_list = value if isinstance(value, list) else [value]
+            filtered = apply_robust_filter(gdf, column, values_list)
+            # Invert the filter (keep rows NOT in the filtered set)
+            gdf = gdf[~gdf.index.isin(filtered.index)]
         # Add more operators as needed
     
     # Ingest into database as temp table
@@ -292,41 +365,44 @@ async def execute_filter_operation(session: WorkspaceSession, op: dict) -> dict:
     filters = op.get("filters", [])
     destination = op.get("destination")
     
-    # Read input table
-    if input_ref.get("kind") == "temporary":
-        table_name = input_ref.get("name")
-        gdf = session.read_table(table_name)
-    elif input_ref.get("kind") == "persistent":
-        table_name = input_ref.get("name")
-        # Read from persistent storage
-        gdf = gpd.read_file(session.db_path, layer=table_name)
-    else:
-        raise ValueError(f"Unsupported input kind: {input_ref.get('kind')}")
+    # Read input table (both temp and persistent tables are in the session's workspace)
+    table_name = input_ref.get("name")
+    print(f"[DEBUG] Reading table: {table_name}")
+    gdf = session.read_table(table_name)
+    print(f"[DEBUG] Loaded {len(gdf)} rows from {table_name}")
     
     original_count = len(gdf)
     
-    # Apply filters
+    # Apply filters (using robust filtering for 'in' and 'equals' operators)
     for filter_obj in filters:
         column = filter_obj.get("column")
         operator = filter_obj.get("operator")
         value = filter_obj.get("value")
         
+        print(f"[DEBUG] Applying filter: {column} {operator} {value}")
+        
         if operator == "equals":
-            gdf = gdf[gdf[column] == value]
+            # Use robust filter
+            gdf = apply_robust_filter(gdf, column, [value])
         elif operator == "not_equals":
-            gdf = gdf[gdf[column] != value]
+            filtered = apply_robust_filter(gdf, column, [value])
+            gdf = gdf[~gdf.index.isin(filtered.index)]
         elif operator == "in":
+            # Use robust filter
             values_list = value if isinstance(value, list) else [value]
-            gdf = gdf[gdf[column].isin(values_list)]
+            gdf = apply_robust_filter(gdf, column, values_list)
         elif operator == "not_in":
             values_list = value if isinstance(value, list) else [value]
-            gdf = gdf[~gdf[column].isin(values_list)]
+            filtered = apply_robust_filter(gdf, column, values_list)
+            gdf = gdf[~gdf.index.isin(filtered.index)]
         elif operator == "greater_than":
             gdf = gdf[gdf[column] > value]
         elif operator == "less_than":
             gdf = gdf[gdf[column] < value]
         elif operator == "contains":
             gdf = gdf[gdf[column].astype(str).str.contains(str(value), case=False, na=False)]
+        
+        print(f"[DEBUG] After filter: {len(gdf)} rows remaining")
     
     # Ingest filtered result as new temp table
     output_table = session.ingest_gdf(gdf, table_name=destination, temporary=True)
@@ -367,12 +443,9 @@ async def execute_buffer_operation(session: WorkspaceSession, op: dict) -> dict:
     # Read input table
     if input_ref.get("kind") == "temporary":
         table_name = input_ref.get("name")
-        gdf = session.read_table(table_name)
-    elif input_ref.get("kind") == "persistent":
-        table_name = input_ref.get("name")
-        gdf = gpd.read_file(session.db_path, layer=table_name)
-    else:
-        raise ValueError(f"Unsupported input kind: {input_ref.get('kind')}")
+    # Read input table (both temp and persistent tables are in the session's workspace)
+    table_name = input_ref.get("name")
+    gdf = session.read_table(table_name)
     
     original_count = len(gdf)
     

@@ -240,6 +240,98 @@ async def dataset_column_values(name: str, col: str):
 
 @router.get("/destination-tables")
 async def list_destination_tables():
-    """Return example destination table names for ingest/destination selection."""
-    # For dev, return a small static list
-    return {"tables": ["water_points_ingested", "water_lines_ingested", "combined_features"]}
+    """
+    Return all available tables from the workspace database.
+    
+    This includes:
+    - Persistent tables (saved in SQLite)
+    - Temporary tables (created during workflow execution)
+    
+    NOTE: In production, this would query the actual workspace.
+    For dev, we read tables from the hardcoded database.
+    """
+    try:
+        from spatialite_gis import Workspace
+        db_path = r'C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk_web.sqlite'
+        
+        with Workspace(db_path) as ws:
+            tables = ws.list_tables()
+            return {"tables": tables}
+    except Exception as e:
+        print(f"[ERROR] Failed to list tables: {e}")
+        # Fallback to example tables if workspace fails
+        return {"tables": ["water_points_fixed", "water_lines_fixed"]}
+
+
+@router.get("/tables/{table_name}/columns")
+async def get_table_columns(table_name: str):
+    """
+    Get columns for a specific table in the workspace database.
+    
+    This is different from /datasets/{name}/columns which only works for
+    predefined datasets. This endpoint works for ANY table in the workspace,
+    including temporary tables created by workflow operations.
+    
+    Args:
+        table_name: Name of the table (can be persistent or temporary)
+    
+    Returns:
+        {"columns": ["column1", "column2", ...]}
+    """
+    try:
+        from spatialite_gis import Workspace
+        db_path = r'C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk_web.sqlite'
+        
+        with Workspace(db_path) as ws:
+            # Read table as GeoDataFrame to get columns
+            gdf = gpd.read_file(db_path, layer=table_name)
+            columns = list(gdf.columns)
+            return {"columns": columns}
+    except Exception as e:
+        print(f"[ERROR] Failed to get columns for table '{table_name}': {e}")
+        return JSONResponse(
+            content={"error": f"Table '{table_name}' not found or cannot be read"}, 
+            status_code=404
+        )
+
+
+@router.get("/tables/{table_name}/columns/{col}/values")
+async def get_table_column_values(table_name: str, col: str):
+    """
+    Get unique values for a column in a workspace table.
+    
+    Similar to /datasets/{name}/columns/{col}/values but works for
+    actual workspace tables instead of predefined datasets.
+    
+    Args:
+        table_name: Name of the table
+        col: Name of the column
+    
+    Returns:
+        {"values": [val1, val2, ...]} (limited to 200 unique values)
+    """
+    try:
+        from spatialite_gis import Workspace
+        db_path = r'C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk_web.sqlite'
+        
+        with Workspace(db_path) as ws:
+            gdf = gpd.read_file(db_path, layer=table_name)
+            
+            if col not in gdf.columns:
+                return JSONResponse(
+                    content={"error": f"Column '{col}' not found in table '{table_name}'"}, 
+                    status_code=404
+                )
+            
+            uniques = gdf[col].dropna().unique().tolist()
+            # Limit result size to prevent large payloads
+            if len(uniques) > 200:
+                uniques = uniques[:200]
+            
+            return {"values": uniques}
+    except Exception as e:
+        print(f"[ERROR] Failed to get column values: {e}")
+        return JSONResponse(
+            content={"error": f"Failed to read table or column"}, 
+            status_code=500
+        )

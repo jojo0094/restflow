@@ -317,6 +317,26 @@ export async function listDestinationTables() {
   return res.json();
 }
 
+/**
+ * Get columns for a workspace table (persistent or temporary).
+ * This is different from getDatasetColumns which only works for predefined datasets.
+ */
+export async function getTableColumns(tableName: string) {
+  const res = await fetch(`${BASE}/tools/tables/${encodeURIComponent(tableName)}/columns`);
+  if (!res.ok) throw new Error(`Failed to get columns for table '${tableName}'`);
+  return res.json();
+}
+
+/**
+ * Get unique values for a column in a workspace table.
+ * Similar to getDatasetColumnValues but works for actual workspace tables.
+ */
+export async function getTableColumnValues(tableName: string, columnName: string) {
+  const res = await fetch(`${BASE}/tools/tables/${encodeURIComponent(tableName)}/columns/${encodeURIComponent(columnName)}/values`);
+  if (!res.ok) throw new Error(`Failed to get values for column '${columnName}' in table '${tableName}'`);
+  return res.json();
+}
+
 export async function createWorkflow(workflow: any) {
   const res = await fetch(`${BASE}/api/workflows`, {
     method: 'POST',

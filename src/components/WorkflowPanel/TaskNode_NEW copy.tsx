@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow, NodeResizer } from '@xyflow/react';
 import { useAtom } from 'jotai';
-import { 
-  listDatasets, 
-  executeNodeOperation, 
-  getDatasetColumns, 
-  getDatasetColumnValues, 
-  listDestinationTables,
-  getTableColumns,
-  getTableColumnValues
-} from '../../lib/api';
+import { getNodeTypes, listDatasets, executeNodeOperation, getDatasetColumns, getDatasetColumnValues } from '../../lib/api';
 import { sessionAtom } from '../../atoms/sessionAtom';
 import type { IngestOperation, FilterOperation, BufferOperation } from '../../lib/engine/operations';
 import type { TableRef } from '../../lib/engine/types';
@@ -37,10 +29,10 @@ export default function TaskNode({ id, data, selected }: Props) {
   const [outputMode, setOutputMode] = useState<'temporary' | 'persistent'>('temporary');
   const [outputName, setOutputName] = useState<string>('');
 
-  // Input source configuration - Updated to support table dropdown
-  const [inputSource, setInputSource] = useState<'table' | 'connected'>('table');
-  const [availableTables, setAvailableTables] = useState<string[]>([]); // SQLite + in-memory tables
-  const [selectedTable, setSelectedTable] = useState<string>('');
+  // Input source configuration
+  const [inputSource, setInputSource] = useState<'file' | 'sqlite' | 'connected'>('file');
+  const [sqliteTables, setSqliteTables] = useState<string[]>([]);
+  const [selectedSqliteTable, setSelectedSqliteTable] = useState<string>('');
   const [datasets, setDatasets] = useState<string[]>([]);
   const [selectedDataset, setSelectedDataset] = useState<string>('');
 
@@ -53,74 +45,32 @@ export default function TaskNode({ id, data, selected }: Props) {
   // Buffer configuration
   const [bufferDistance, setBufferDistance] = useState<number>(100);
 
-  /**
-   * USEEFFECT: Load initial data on mount
-   * - Datasets for ingest operations
-   * - Available tables (SQLite + in-memory) for table dropdown
-   */
   useEffect(() => {
     // Load datasets for ingest operations
-    listDatasets()
-      .then((r) => setDatasets(r.datasets || []))
-      .catch((err) => {
-        console.error('[TaskNode] Failed to load datasets:', err);
-        setDatasets([]);
-      });
+    listDatasets().then((r) => setDatasets(r.datasets || [])).catch(console.error);
     
-    // Load available tables (both persistent SQLite and temporary in-memory)
-    listDestinationTables()
-      .then((r) => setAvailableTables(r.tables || []))
-      .catch((err) => {
-        console.error('[TaskNode] Failed to load tables:', err);
-        setAvailableTables([]);
-      });
+    // TODO: Load SQLite tables from hardcoded database
+    // For now, using mock data
+    setSqliteTables(['water_points_fixed', 'water_lines_fixed']);
   }, []);
 
-  /**
-   * USEEFFECT: Load columns when table/dataset selected
-   * 
-   * IMPORTANT: We use different APIs depending on the source:
-   * - getTableColumns() for actual workspace tables (from table dropdown)
-   * - getDatasetColumns() for predefined datasets (legacy compatibility)
-   */
+  // Load columns when dataset/table selected
   useEffect(() => {
-    if (nodeType === 'ingest' && selectedTable) {
-      setColumns([]); // Reset columns while loading
-      setSelectedColumn(''); // Reset selection
-      setColumnValues([]); // Reset values
-      
-      // Use table API for workspace tables
-      getTableColumns(selectedTable)
-        .then((result) => {
-          setColumns(result.columns || []);
-        })
-        .catch((err) => {
-          console.error('[TaskNode] Failed to load columns for table:', err);
-          setColumns([]);
-        });
+    if (nodeType === 'ingest' && selectedDataset) {
+      getDatasetColumns(selectedDataset)
+        .then(cols => setColumns(cols))
+        .catch(console.error);
     }
-  }, [selectedTable, nodeType]);
+  }, [selectedDataset, nodeType]);
 
-  /**
-   * USEEFFECT: Load column values when column selected (for filtering)
-   * 
-   * Uses table API since we're working with actual workspace tables
-   */
+  // Load column values when column selected
   useEffect(() => {
-    if (selectedColumn && selectedTable) {
-      setColumnValues([]); // Reset values while loading
-      setSelectedValues([]); // Reset selection
-      
-      getTableColumnValues(selectedTable, selectedColumn)
-        .then((result) => {
-          setColumnValues(result.values || []);
-        })
-        .catch((err) => {
-          console.error('[TaskNode] Failed to load column values:', err);
-          setColumnValues([]);
-        });
+    if (selectedColumn && selectedDataset) {
+      getDatasetColumnValues(selectedDataset, selectedColumn)
+        .then(vals => setColumnValues(vals))
+        .catch(console.error);
     }
-  }, [selectedColumn, selectedTable]);
+  }, [selectedColumn, selectedDataset]);
 
   /**
    * Get input TableRef from connected source node
@@ -156,17 +106,18 @@ export default function TaskNode({ id, data, selected }: Props) {
       let result: any;
 
       if (nodeType === 'ingest') {
-        // Build input source based on selection
+        // Build input source
         let source: { kind: 'dataset'; name: string } | { kind: 'file'; path: string };
         
-        if (inputSource === 'table' && selectedTable) {
-          // Using table dropdown (could be SQLite table or dataset)
-          source = { kind: 'dataset', name: selectedTable };
-        } else if (inputSource === 'table' && selectedDataset) {
-          // Fallback to selected dataset
+        if (inputSource === 'file') {
+          // TODO: File browser integration
+          source = { kind: 'file', path: 'C:\\Users\\jkyawkyaw\\.spatialite_databases\\3waters_wk.sqlite' };
+        } else if (inputSource === 'sqlite' && selectedSqliteTable) {
+          source = { kind: 'dataset', name: selectedSqliteTable };
+        } else if (selectedDataset) {
           source = { kind: 'dataset', name: selectedDataset };
         } else {
-          throw new Error('Please select an input source (table or dataset)');
+          throw new Error('Please select an input source');
         }
 
         const operation: IngestOperation = {
@@ -316,37 +267,28 @@ export default function TaskNode({ id, data, selected }: Props) {
                   onChange={(e) => setInputSource(e.target.value as any)}
                   style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }}
                 >
-                  <option value="table">�️ Table (SQLite + In-Memory)</option>
+                  <option value="file">📁 File (Spatialite)</option>
+                  <option value="sqlite">🗄️ SQLite Table</option>
                   <option value="connected">🔗 Connected Node</option>
                 </select>
 
-                {inputSource === 'table' && (
+                {inputSource === 'file' && (
+                  <div style={{ marginTop: 8, padding: 8, background: '#fefce8', borderRadius: 6, fontSize: 10, color: '#854d0e' }}>
+                    💡 Using: C:\Users\jkyawkyaw\.spatialite_databases\3waters_wk.sqlite
+                  </div>
+                )}
+
+                {inputSource === 'sqlite' && (
                   <div style={{ marginTop: 8 }}>
-                    <label style={{ display: 'block', fontSize: 10, color: '#64748b', marginBottom: 4 }}>
-                      Select Table (SQLite or In-Memory)
-                    </label>
+                    <label style={{ display: 'block', fontSize: 10, color: '#64748b', marginBottom: 4 }}>Table Name</label>
                     <select 
-                      value={selectedTable} 
-                      onChange={(e) => {
-                        setSelectedTable(e.target.value);
-                        setSelectedDataset(e.target.value); // Also set as dataset for column loading
-                        setSelectedColumn(''); // Reset filter
-                        setSelectedValues([]);
-                      }}
+                      value={selectedSqliteTable} 
+                      onChange={(e) => setSelectedSqliteTable(e.target.value)}
                       style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid #e2e8f0', fontSize: 11 }}
                     >
                       <option value="">-- Select Table --</option>
-                      {availableTables.map((t: string) => (
-                        <option key={t} value={t}>
-                          {t.startsWith('temp_') ? `⚡ ${t} (temp)` : `💾 ${t}`}
-                        </option>
-                      ))}
+                      {sqliteTables.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
-                    {availableTables.length === 0 && (
-                      <div style={{ marginTop: 4, fontSize: 10, color: '#94a3b8' }}>
-                        No tables available yet
-                      </div>
-                    )}
                   </div>
                 )}
 
