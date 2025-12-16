@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel
 from .models import (
     Workflow, WorkflowCreate, WorkflowResponse, WorkflowUpdate,
     ExecutionRequest, ExecutionStatus, NodeTypeInfo
@@ -12,7 +13,9 @@ from .models import (
 from .database_models import WorkflowDB, NodeDB, EdgeDB, ExecutionDB, ExecutionStatusEnum
 from .db import get_db, init_db
 from .executors import NODE_REGISTRY
+from .session import SessionManager, WorkspaceSession
 from . import tools
+import os
 
 app = FastAPI(title="restFlow backend", version="0.1.0")
 
@@ -25,6 +28,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============================================================================
+# SESSION MANAGEMENT (Global state)
+# ============================================================================
+
+# Initialize session manager with default DB path
+default_db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'dev.db'))
+session_manager = SessionManager(default_db_path)
+
 
 @app.on_event("startup")
 async def startup_event():
@@ -35,6 +46,265 @@ async def startup_event():
 @app.get("/")
 async def health():
     return {"status": "ok", "version": "0.1.0"}
+
+
+# ============================================================================
+# SESSION API (New backend-agnostic endpoints)
+# ============================================================================
+
+class OperationRequest(BaseModel):
+    """Request body for executing an operation."""
+    operation: dict  # Operation object (type, input, filters, etc.)
+
+
+class SessionResponse(BaseModel):
+    """Response when creating a session."""
+    session_id: str
+
+
+class OperationResultResponse(BaseModel):
+    """Response after executing an operation."""
+    success: bool
+    outputTable: dict  # TableRef object
+    rowCount: Optional[int] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
+
+
+@app.post("/api/sessions", response_model=SessionResponse)
+async def create_session():
+    """
+    Create a new workflow execution session.
+    
+    Returns a session_id that should be used for all subsequent operations.
+    
+    Example response:
+    {
+      "session_id": "abc-123-def-456"
+    }
+    """
+    session = session_manager.create_session()
+    return SessionResponse(session_id=session.session_id)
+
+
+@app.delete("/api/sessions/{session_id}")
+async def destroy_session(session_id: str):
+    """
+    Destroy a session and clean up all temporary tables.
+    
+    IMPORTANT: This rolls back any uncommitted temp tables!
+    """
+    try:
+        session_manager.destroy_session(session_id)
+        return {"status": "ok", "message": f"Session {session_id} destroyed"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+
+@app.get("/api/sessions")
+async def list_sessions():
+    """
+    List all active sessions (useful for debugging).
+    """
+    return {"sessions": session_manager.list_sessions()}
+
+
+@app.post("/api/sessions/{session_id}/execute", response_model=OperationResultResponse)
+async def execute_operation(session_id: str, request: OperationRequest):
+    """
+    Execute a data operation (filter, ingest, buffer, etc.).
+    
+    Request body should contain an 'operation' object with:
+    - type: 'ingest' | 'filter' | 'buffer' | 'join' | 'aggregate' | 'export'
+    - Additional fields depending on operation type
+    
+    Example request (filter operation):
+    {
+      "operation": {
+        "type": "filter",
+        "input": {"kind": "persistent", "name": "water_points"},
+        "filters": [
+          {"column": "status", "operator": "equals", "value": "active"}
+        ]
+      }
+    }
+    
+    Example response:
+    {
+      "success": true,
+      "outputTable": {"kind": "temporary", "name": "temp_abc123", "sessionId": "..."},
+      "rowCount": 42
+    }
+    """
+    try:
+        session = session_manager.get_session(session_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+    
+    operation = request.operation
+    op_type = operation.get("type")
+    
+    try:
+        # Dispatch to appropriate executor based on operation type
+        if op_type == "ingest":
+            result = await execute_ingest_operation(session, operation)
+        elif op_type == "filter":
+            result = await execute_filter_operation(session, operation)
+        elif op_type == "buffer":
+            result = await execute_buffer_operation(session, operation)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown operation type: {op_type}"
+            )
+        
+        return OperationResultResponse(**result)
+    
+    except Exception as e:
+        import traceback
+        return OperationResultResponse(
+            success=False,
+            outputTable={"kind": "temporary", "name": "error", "sessionId": session_id},
+            error=str(e),
+            message=traceback.format_exc()
+        )
+
+
+@app.post("/api/sessions/{session_id}/commit")
+async def commit_table(session_id: str, tempTable: str, finalTable: str):
+    """
+    Commit a temporary table to make it permanent.
+    
+    Request body:
+    {
+      "tempTable": "temp_abc123",
+      "finalTable": "my_results"
+    }
+    """
+    try:
+        session = session_manager.get_session(session_id)
+        session.commit_table(tempTable, finalTable)
+        return {"status": "ok", "message": f"Committed {tempTable} -> {finalTable}"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/sessions/{session_id}/rollback")
+async def rollback_session(session_id: str):
+    """
+    Rollback session - delete all temporary tables.
+    """
+    try:
+        session = session_manager.get_session(session_id)
+        session.rollback()
+        return {"status": "ok", "message": "Session rolled back"}
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+
+# ============================================================================
+# OPERATION EXECUTORS (implement the actual logic)
+# ============================================================================
+
+async def execute_ingest_operation(session: WorkspaceSession, op: dict) -> dict:
+    """
+    Execute an ingest operation.
+    
+    Operation format:
+    {
+      "type": "ingest",
+      "source": {"kind": "dataset", "name": "water_points"},
+      "filters": [{"column": "status", "operator": "equals", "value": "active"}],
+      "destination": "optional_table_name"
+    }
+    """
+    import geopandas as gpd
+    import pandas as pd
+    from pathlib import Path
+    
+    source = op.get("source", {})
+    filters = op.get("filters", [])
+    destination = op.get("destination")
+    
+    # Resolve source to file path
+    if source.get("kind") == "dataset":
+        dataset_name = source.get("name")
+        # Use existing DATASETS registry from tools.py
+        from .tools import DATASETS
+        if dataset_name not in DATASETS:
+            raise ValueError(f"Dataset '{dataset_name}' not found")
+        file_path = DATASETS[dataset_name]
+    else:
+        raise ValueError(f"Unsupported source kind: {source.get('kind')}")
+    
+    # Read dataset
+    gdf = gpd.read_file(file_path)
+    original_count = len(gdf)
+    
+    # Apply filters if provided
+    for filter_obj in filters:
+        column = filter_obj.get("column")
+        operator = filter_obj.get("operator")
+        value = filter_obj.get("value")
+        
+        if operator == "equals":
+            gdf = gdf[gdf[column] == value]
+        elif operator == "in":
+            gdf = gdf[gdf[column].isin(value if isinstance(value, list) else [value])]
+        # Add more operators as needed
+    
+    # Ingest into database as temp table
+    table_name = session.ingest_gdf(gdf, table_name=destination, temporary=True)
+    
+    return {
+        "success": True,
+        "outputTable": {
+            "kind": "temporary",
+            "name": table_name,
+            "sessionId": session.session_id
+        },
+        "rowCount": len(gdf),
+        "message": f"Ingested {len(gdf)} rows (filtered from {original_count})"
+    }
+
+
+async def execute_filter_operation(session: WorkspaceSession, op: dict) -> dict:
+    """
+    Execute a filter operation.
+    
+    Operation format:
+    {
+      "type": "filter",
+      "input": {"kind": "temporary", "name": "temp_abc123", "sessionId": "..."},
+      "filters": [...],
+      "destination": "optional_name"
+    }
+    """
+    # TODO: Implement filter executor
+    raise NotImplementedError("Filter operation not yet implemented")
+
+
+async def execute_buffer_operation(session: WorkspaceSession, op: dict) -> dict:
+    """
+    Execute a buffer operation.
+    
+    Operation format:
+    {
+      "type": "buffer",
+      "input": {...},
+      "distance": 100,
+      "destination": "optional_name"
+    }
+    """
+    # TODO: Implement buffer executor
+    raise NotImplementedError("Buffer operation not yet implemented")
+
+
+# ============================================================================
+# LEGACY ENDPOINTS (kept for backward compatibility)
+# ============================================================================
 
 
 # ==================== Node Types ====================

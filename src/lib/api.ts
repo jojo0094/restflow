@@ -1,4 +1,229 @@
+/**
+ * API MODULE - Unified interface for data operations
+ * 
+ * ARCHITECTURE EVOLUTION:
+ * ======================
+ * OLD: api.ts made direct fetch() calls to FastAPI
+ * NEW: api.ts delegates to an IDataEngine implementation
+ * 
+ * WHY THIS MATTERS:
+ * - Components don't change (still call same functions)
+ * - But now we can swap engines at runtime (remote vs WASM)
+ * - Easy to add features like offline mode, caching, etc.
+ * 
+ * MIGRATION PATH:
+ * - Keep old functions (runWorkflow, uploadFile, etc.) for backwards compatibility
+ * - Add new engine-based functions (createWorkflowSession, executeNodeOperation)
+ * - Gradually migrate components to use new functions
+ * - Eventually remove old functions
+ */
+
+import type { IDataEngine, SessionId, Operation, OperationResult } from './engine';
+import { RemoteDataEngine } from './engine';
+
 const BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+
+// ============================================================================
+// ENGINE INITIALIZATION
+// ============================================================================
+
+/**
+ * Global engine instance
+ * 
+ * WHY GLOBAL:
+ * - All components need access to the same engine
+ * - Avoids prop drilling (passing engine through 10 components)
+ * - Can be swapped at runtime (remote -> WASM)
+ * 
+ * ALTERNATIVE APPROACH:
+ * Could use React Context to provide engine to components.
+ * Global is simpler for now, but Context is more "React-y".
+ */
+let engine: IDataEngine;
+
+/**
+ * Initialize the data engine
+ * 
+ * MUST BE CALLED ON APP STARTUP!
+ * 
+ * USAGE:
+ * // In App.tsx or main.tsx
+ * import { initEngine } from './lib/api';
+ * 
+ * function App() {
+ *   useEffect(() => {
+ *     initEngine('remote').catch(console.error);
+ *   }, []);
+ *   
+ *   return <WorkflowCanvas />;
+ * }
+ * 
+ * @param mode - 'remote' for FastAPI backend, 'wasm' for browser (future)
+ */
+export async function initEngine(mode: 'remote' | 'wasm' = 'remote'): Promise<void> {
+  console.log(`[API] Initializing ${mode} engine...`);
+  
+  if (mode === 'remote') {
+    const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
+    engine = new RemoteDataEngine(baseUrl);
+  } else if (mode === 'wasm') {
+    // FUTURE: Load WASM engine
+    // const { WasmDataEngine } = await import('./engine/wasm-engine');
+    // engine = new WasmDataEngine();
+    throw new Error('WASM mode not yet implemented');
+  } else {
+    throw new Error(`Unknown engine mode: ${mode}`);
+  }
+
+  // Initialize engine (connects to server, loads WASM, etc.)
+  if (engine.init) {
+    await engine.init();
+  }
+
+  console.log('[API] Engine initialized successfully');
+}
+
+/**
+ * Get the current engine instance
+ * 
+ * THROWS if engine hasn't been initialized yet.
+ * This helps catch bugs where we forget to call initEngine().
+ */
+function getEngine(): IDataEngine {
+  if (!engine) {
+    throw new Error('Engine not initialized. Call initEngine() first!');
+  }
+  return engine;
+}
+
+// ============================================================================
+// NEW ENGINE-BASED API
+// ============================================================================
+
+/**
+ * Create a new workflow execution session
+ * 
+ * WHEN TO CALL:
+ * - User creates a new workflow
+ * - User opens an existing workflow for editing
+ * 
+ * RETURNS:
+ * SessionId that you'll pass to all subsequent operations
+ * 
+ * EXAMPLE:
+ * const [sessionId, setSessionId] = useState<SessionId | null>(null);
+ * 
+ * useEffect(() => {
+ *   createWorkflowSession().then(setSessionId);
+ * }, []);
+ */
+export async function createWorkflowSession(): Promise<SessionId> {
+  return getEngine().createSession();
+}
+
+/**
+ * Destroy a workflow session (clean up temporary tables)
+ * 
+ * WHEN TO CALL:
+ * - User closes workflow
+ * - User switches to a different workflow
+ * - Component unmounts
+ * 
+ * IMPORTANT:
+ * Always call this! Otherwise temp tables accumulate and waste memory/disk.
+ * 
+ * EXAMPLE:
+ * useEffect(() => {
+ *   return () => {
+ *     // Cleanup on unmount
+ *     if (sessionId) {
+ *       destroyWorkflowSession(sessionId).catch(console.error);
+ *     }
+ *   };
+ * }, [sessionId]);
+ */
+export async function destroyWorkflowSession(sessionId: SessionId): Promise<void> {
+  return getEngine().destroySession(sessionId);
+}
+
+/**
+ * Execute a node operation
+ * 
+ * THIS IS THE MAIN WORKFLOW FUNCTION!
+ * 
+ * USAGE:
+ * // In TaskNode.tsx
+ * async function handleRun() {
+ *   const operation = {
+ *     type: 'filter',
+ *     input: { kind: 'persistent', name: 'water_points' },
+ *     filters: [
+ *       { column: 'status', operator: 'equals', value: 'active' }
+ *     ]
+ *   };
+ *   
+ *   const result = await executeNodeOperation(sessionId, operation);
+ *   // result.outputTable = { kind: 'temporary', name: 'temp_abc123', ... }
+ *   // Store this in node data for next node to use
+ * }
+ */
+export async function executeNodeOperation(
+  sessionId: SessionId,
+  operation: Operation
+): Promise<OperationResult> {
+  return getEngine().executeOperation(sessionId, operation);
+}
+
+/**
+ * Commit a temporary table to make it permanent
+ * 
+ * WHEN TO CALL:
+ * - User is satisfied with workflow results and clicks "Save Results"
+ * - Want to keep an intermediate result for future workflows
+ */
+export async function commitWorkflowTable(
+  sessionId: SessionId,
+  tempTableName: string,
+  finalTableName: string
+): Promise<void> {
+  return getEngine().commitTable(sessionId, tempTableName, finalTableName);
+}
+
+/**
+ * Rollback session (discard all temporary tables)
+ * 
+ * WHEN TO CALL:
+ * - User cancels workflow execution
+ * - Workflow hits an error and needs cleanup
+ */
+export async function rollbackWorkflowSession(sessionId: SessionId): Promise<void> {
+  return getEngine().rollbackSession(sessionId);
+}
+
+/**
+ * List all tables in a session
+ */
+export async function listSessionTables(
+  sessionId: SessionId,
+  includeTemporary: boolean = true
+) {
+  return getEngine().listTables(sessionId, includeTemporary);
+}
+
+/**
+ * Get schema for a table
+ */
+export async function getTableSchema(sessionId: SessionId, tableName: string) {
+  return getEngine().getTableSchema(sessionId, tableName);
+}
+
+// ============================================================================
+// LEGACY API (kept for backward compatibility)
+// ============================================================================
+
+/**
+ * @deprecated Use createWorkflowSession() + executeNodeOperation() instead
+ */
 
 export async function health() {
   const res = await fetch(`${BASE}/`);
